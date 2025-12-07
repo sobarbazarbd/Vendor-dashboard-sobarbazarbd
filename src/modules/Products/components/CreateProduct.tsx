@@ -1,7 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Card,
   Col,
-  DatePicker,
   Input,
   Modal,
   Row,
@@ -9,609 +9,530 @@ import {
   Form as AntForm,
   Typography,
   Divider,
-  Avatar,
-  UploadProps,
+  Button,
+  Upload,
   message,
 } from "antd";
-import { UserOutlined } from "@ant-design/icons";
-import { Upload } from "antd";
+import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Form } from "../../../common/CommonAnt";
 import { useEffect, useState } from "react";
-import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
-import { phoneValidator } from "../../../utilities/validator";
-import GenderSelect, {
-  ReligionSelect,
-} from "../../../common/commonField/commonFeild";
-import { useCreateProductMutation } from "../api/productEndPoints";
+
+import {
+  useCreateProductMutation,
+  useGetBrandsQuery,
+  useGetSubCategoriesQuery,
+} from "../api/productEndPoints";
+
+import { CommonSelect } from "../../../common/commonField/commonFeild";
+import useDebounce from "../../../hooks/useDebounce";
 
 const { Title, Text } = Typography;
 
 const CreateProduct = () => {
   const [form] = AntForm.useForm();
   const navigate = useNavigate();
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearch = useDebounce(searchTerm, 500);
+
   const [create, { isLoading, isSuccess }] = useCreateProductMutation();
-  const [previewVisible, setPreviewVisible] = useState(false);
-  const [previewImage, setPreviewImage] = useState("");
-  const [previewTitle, setPreviewTitle] = useState("");
-  const [fileList, setFileList] = useState<any[]>([]);
+  const { data: subCategoriesData } = useGetSubCategoriesQuery({
+    search: debouncedSearch || undefined,
+  });
 
-  const handlePreview = async (file: any) => {
-    setPreviewImage(file.thumbUrl || file.url);
-    setPreviewVisible(true);
-    setPreviewTitle(
-      file.name || file.url.substring(file.url.lastIndexOf("/") + 1)
+  const { data: brandData } = useGetBrandsQuery({});
+
+  /** -------------------------------
+   * IMAGE STATE + MODAL FORM
+   --------------------------------*/
+  const [images, setImages] = useState<any[]>([]);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+
+  // image modal form
+  const [imageForm] = AntForm.useForm();
+
+  const openAddImageModal = () => {
+    imageForm.resetFields();
+    setIsImageModalOpen(true);
+  };
+
+  const handleAddImage = () => {
+    imageForm.validateFields().then((values) => {
+      const fileObj = values.image?.fileList?.[0];
+
+      if (!fileObj) {
+        return message.error("Please upload an image!");
+      }
+
+      const newImage = {
+        id: 0,
+        image: "",
+        alt_text: values.alt_text,
+        is_feature: values.is_feature || false,
+        order: Number(values.order) || 0,
+        file: fileObj,
+      };
+
+      setImages((prev) => [...prev, newImage]);
+      setIsImageModalOpen(false);
+    });
+  };
+
+  const removeImage = (i: number) => {
+    const updated = images.filter((_, index) => index !== i);
+    setImages(updated);
+  };
+
+  /** ---------------------------
+   * PRODUCT VARIANTS
+   -----------------------------*/
+  const [variants, setVariants] = useState<any[]>([
+    {
+      name: "",
+      sku: "",
+      price: "",
+      stock: "",
+      is_default: false,
+      attributes: [],
+    },
+  ]);
+
+  const addVariant = () => {
+    setVariants([
+      ...variants,
+      {
+        name: "",
+        sku: "",
+        price: "",
+        stock: "",
+        is_default: false,
+        attributes: [],
+      },
+    ]);
+  };
+
+  const removeVariant = (index: number) => {
+    if (variants.length === 1) {
+      return message.warning("At least one variant required!");
+    }
+    setVariants(variants.filter((_, i) => i !== index));
+  };
+
+  const addAttribute = (variantIndex: number) => {
+    const arr = [...variants];
+    arr[variantIndex].attributes.push({ key: "", value: "" });
+    setVariants(arr);
+  };
+
+  const removeAttribute = (variantIndex: number, attrIndex: number) => {
+    const arr = [...variants];
+    arr[variantIndex].attributes.splice(attrIndex, 1);
+    setVariants(arr);
+  };
+
+  /** -------------------------------
+   * SUBMIT HANDLER
+   --------------------------------*/
+  const onFinish = (values: any) => {
+    const formData = new FormData();
+
+    formData.append("name", values.name);
+    formData.append("description", values.description || "");
+    formData.append("sku", values.sku || "");
+    formData.append("is_active", values.is_active ? "true" : "false");
+
+    values.subcategories?.forEach((id: number) =>
+      formData.append("subcategories", id.toString())
     );
-  };
 
-  const handleCancel = () => setPreviewVisible(false);
+    if (values.brand_or_company) {
+      formData.append("brand_or_company", values.brand_or_company);
+    }
 
-  const uploadProps: UploadProps = {
-    beforeUpload: (file) => {
-      const isImage = file.type.startsWith("image/");
-      if (!isImage) {
-        message.error("You can only upload image files!");
-        return Upload.LIST_IGNORE;
-      }
-      const isLt2M = file.size / 1024 / 1024 < 2;
-      if (!isLt2M) {
-        message.error("Image must be smaller than 2MB!");
-        return Upload.LIST_IGNORE;
-      }
-      return false;
-    },
-    onChange: ({ fileList: newFileList }) => {
-      setFileList(newFileList);
-    },
-    fileList,
-    maxCount: 1,
-    listType: "picture-card",
-    onPreview: handlePreview,
-  };
+    formData.append(
+      "variants",
+      JSON.stringify(
+        variants.map((v) => ({
+          name: v.name,
+          sku: v.sku,
+          price: Number(v.price),
+          stock: Number(v.stock),
+          is_default: v.is_default,
+          attributes: Object.fromEntries(
+            v.attributes.map((a: any) => [a.key, a.value])
+          ),
+        }))
+      )
+    );
 
-  const onFinish = (values: any): void => {
-    const formData: FormData = new FormData();
+    /** -------------------------------
+     * IMAGE APPEND TO FORMDATA
+     --------------------------------*/
+    images.forEach((img) => {
+      const meta = {
+        id: 0,
+        image: "",
+        alt_text: img.alt_text,
+        is_feature: img.is_feature,
+        order: img.order,
+        variant: null,
+      };
 
-    const phoneFields = [
-      "contact_phone_number",
-      "phone_number",
-      "mother_phone_number",
-      "local_guardian_phone_number",
-      "father_number",
-    ];
+      formData.append(
+        "images",
+        new Blob([JSON.stringify(meta)], {
+          type: "application/json",
+        })
+      );
 
-    Object.entries(values).forEach(([key, value]) => {
-      if (value === undefined || value === null) {
-        return;
-      }
-
-      if (key === "image") {
-        if (Array.isArray(value) && value.length > 0) {
-          value.forEach((file) => {
-            if (file?.originFileObj && file.originFileObj instanceof File) {
-              formData.append(key, file.originFileObj);
-            }
-          });
-        }
-      } else if (key === "date_of_birth") {
-        formData.append(key, dayjs(value as any).format("YYYY-MM-DD"));
-      } else if (phoneFields.includes(key) && value) {
-        const phoneNumber = value.toString().trim();
-        if (phoneNumber) {
-          formData.append(key, `880${phoneNumber}`);
-        }
-      } else {
-        formData.append(key, value as string | Blob);
-      }
+      formData.append("image_files", img.file.originFileObj);
     });
 
-    const user = {
-      username: values.username,
-      password: values.password,
-    };
-
-    formData.append("user", JSON.stringify(user));
+    // NO DELETE IDS
+    formData.append("delete_image_ids", JSON.stringify([]));
 
     create(formData);
   };
 
   useEffect(() => {
     if (isSuccess) {
-      message.success("Product created successfully!");
-      navigate("/students");
+      message.success("Product Created Successfully!");
+      navigate("/products");
     }
-  }, [isSuccess, navigate]);
+  }, [isSuccess]);
 
   return (
-    <div className="create-student-form">
-      <div className="form-header">
-        <Title level={3} className="form-title">
-          Create New Product
-        </Title>
-        <Text type="secondary">
-          Fill in all required fields to register a new student
-        </Text>
-        <Divider />
-      </div>
+    <div className="create-product-form">
+      <Title level={3}>Create New Product</Title>
+      <Divider />
 
-      <Form
-        form={form}
-        onFinish={onFinish}
-        isLoading={isLoading}
-        isSuccess={isSuccess}
-        initialValues={{
-          is_active: true,
-          can_login: false,
-        }}
-      >
+      <Form form={form} onFinish={onFinish} isLoading={isLoading}>
         <Row gutter={[24, 24]}>
-          {/* Product Information Section */}
+          {/* BASIC INFO */}
           <Col xs={24}>
-            <Card
-              title={<span className="section-title">Product Information</span>}
-              className="form-section-card"
-              headStyle={{ borderBottom: "1px solid #f0f0f0" }}
-            >
-              <Row gutter={[24, 16]}>
-                <Col xs={24} md={8} lg={6} xl={5}>
-                  <Card className="upload-card">
-                    <Form.Item
-                      name="image"
-                      valuePropName="fileList"
-                      getValueFromEvent={(e) => {
-                        if (Array.isArray(e)) {
-                          return e;
-                        }
-                        return e?.fileList;
-                      }}
-                    >
-                      <Upload {...uploadProps}>
-                        {fileList.length >= 1 ? null : (
-                          <div className="upload-placeholder">
-                            <Avatar
-                              size={100}
-                              icon={<UserOutlined />}
-                              className="avatar-upload"
-                            />
-                            <Text className="upload-text">
-                              Click to upload photo
-                            </Text>
-                            <Text type="secondary">(Max 2MB)</Text>
-                          </div>
-                        )}
-                      </Upload>
-                    </Form.Item>
-                    <Modal
-                      open={previewVisible}
-                      title={previewTitle}
-                      footer={null}
-                      onCancel={handleCancel}
-                      width={600}
-                    >
-                      <img
-                        alt="preview"
-                        style={{
-                          width: "100%",
-                          maxHeight: "70vh",
-                          objectFit: "contain",
-                        }}
-                        src={previewImage}
-                      />
-                    </Modal>
-                  </Card>
+            <Card title="Basic Product Information">
+              <Row gutter={[16, 16]}>
+                <Col xs={24} md={12}>
+                  <Form.Item
+                    label="Product Name"
+                    name="name"
+                    rules={[{ required: true }]}
+                  >
+                    <Input size="large" placeholder="Product Name" />
+                  </Form.Item>
                 </Col>
 
-                <Col xs={24} md={16} lg={18} xl={19}>
+                <Col xs={24} md={12}>
+                  <Form.Item label="SKU" name="sku">
+                    <Input size="large" placeholder="SKU" />
+                  </Form.Item>
+                </Col>
+
+                <Col xs={24}>
+                  <Form.Item label="Description" name="description">
+                    <Input.TextArea
+                      rows={4}
+                      placeholder="Product Description"
+                    />
+                  </Form.Item>
+                </Col>
+
+                <Col xs={24} md={12}>
+                  <Form.Item label="Brand" name="brand_or_company">
+                    <CommonSelect
+                      placeholder="Select Brand"
+                      options={brandData?.data?.results?.map((b: any) => ({
+                        label: b.name,
+                        value: b.id,
+                      }))}
+                    />
+                  </Form.Item>
+                </Col>
+
+                <Col xs={24} md={12}>
+                  <Form.Item label="Sub Categories" name="subcategories">
+                    <CommonSelect
+                      mode="multiple"
+                      placeholder="Search Sub Categories"
+                      onSearch={(v) => setSearchTerm(v)}
+                      options={subCategoriesData?.data?.results?.map(
+                        (s: any) => ({
+                          label: s.name,
+                          value: s.id,
+                        })
+                      )}
+                    />
+                  </Form.Item>
+                </Col>
+
+                <Col xs={24}>
+                  <Form.Item
+                    label="Status"
+                    name="is_active"
+                    valuePropName="checked"
+                  >
+                    <Switch
+                      checkedChildren="Active"
+                      unCheckedChildren="Inactive"
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Card>
+          </Col>
+
+          {/* IMAGE SECTION */}
+          <Col xs={24}>
+            <Card
+              title="Images"
+              extra={
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={openAddImageModal}
+                >
+                  Add Image
+                </Button>
+              }
+            >
+              {images.length === 0 && <Text>No images added yet.</Text>}
+
+              <Row gutter={[16, 16]}>
+                {images.map((img, index) => (
+                  <Col key={index} xs={24} md={6}>
+                    <Card
+                      hoverable
+                      cover={<img alt={img.alt_text} src={img.file.thumbUrl} />}
+                      extra={
+                        <Button
+                          danger
+                          size="small"
+                          onClick={() => removeImage(index)}
+                        >
+                          Remove
+                        </Button>
+                      }
+                    >
+                      <p>
+                        <b>Alt:</b> {img.alt_text}
+                      </p>
+                      <p>
+                        <b>Order:</b> {img.order}
+                      </p>
+                      <p>
+                        <b>Feature:</b> {img.is_feature ? "Yes" : "No"}
+                      </p>
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
+            </Card>
+          </Col>
+
+          {/* VARIANTS */}
+          <Col xs={24}>
+            <Card
+              title="Variants"
+              extra={
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={addVariant}
+                >
+                  Add Variant
+                </Button>
+              }
+            >
+              {variants.map((variant, index) => (
+                <Card
+                  key={index}
+                  title={`Variant ${index + 1}`}
+                  extra={
+                    <Button
+                      danger
+                      icon={<DeleteOutlined />}
+                      onClick={() => removeVariant(index)}
+                    >
+                      Remove
+                    </Button>
+                  }
+                  style={{ marginBottom: 16 }}
+                >
                   <Row gutter={[16, 16]}>
-                    <Col xs={24} sm={12}>
-                      <Form.Item<any>
-                        label={<span className="form-label">First Name</span>}
-                        name="first_name"
-                        rules={[
-                          {
-                            required: true,
-                            message: "Please input first name!",
-                          },
-                        ]}
-                      >
-                        <Input
-                          placeholder="First name"
-                          size="large"
-                          className="form-input"
-                        />
-                      </Form.Item>
+                    <Col xs={24} md={12}>
+                      <Input
+                        placeholder="Variant Name"
+                        value={variant.name}
+                        onChange={(e) => {
+                          const arr = [...variants];
+                          arr[index].name = e.target.value;
+                          setVariants(arr);
+                        }}
+                      />
                     </Col>
 
-                    <Col xs={24} sm={12}>
-                      <Form.Item<any>
-                        label={<span className="form-label">Last Name</span>}
-                        name="last_name"
-                        rules={[
-                          {
-                            required: true,
-                            message: "Please input last name!",
-                          },
-                        ]}
-                      >
-                        <Input
-                          placeholder="Last name"
-                          size="large"
-                          className="form-input"
-                        />
-                      </Form.Item>
+                    <Col xs={24} md={12}>
+                      <Input
+                        placeholder="SKU"
+                        value={variant.sku}
+                        onChange={(e) => {
+                          const arr = [...variants];
+                          arr[index].sku = e.target.value;
+                          setVariants(arr);
+                        }}
+                      />
                     </Col>
 
-                    <Col xs={24} sm={12} md={8}>
-                      <Form.Item<any>
-                        label={<span className="form-label">Current Roll</span>}
-                        name="current_roll"
-                      >
-                        <Input
-                          placeholder="Roll number"
-                          size="large"
-                          className="form-input"
-                        />
-                      </Form.Item>
+                    <Col xs={24} md={6}>
+                      <Input
+                        placeholder="Price"
+                        type="number"
+                        value={variant.price}
+                        onChange={(e) => {
+                          const arr = [...variants];
+                          arr[index].price = e.target.value;
+                          setVariants(arr);
+                        }}
+                      />
                     </Col>
 
-                    <Col xs={24} sm={12} md={8}>
-                      <Form.Item
-                        label={<span className="form-label">Can Login</span>}
-                        name="can_login"
-                        valuePropName="checked"
-                      >
-                        <Switch
-                          checkedChildren="Yes"
-                          unCheckedChildren="No"
-                          className="form-switch"
-                        />
-                      </Form.Item>
+                    <Col xs={24} md={6}>
+                      <Input
+                        placeholder="Stock"
+                        type="number"
+                        value={variant.stock}
+                        onChange={(e) => {
+                          const arr = [...variants];
+                          arr[index].stock = e.target.value;
+                          setVariants(arr);
+                        }}
+                      />
                     </Col>
 
-                    <Col xs={24} sm={12} md={8}>
-                      <Form.Item
-                        label={<span className="form-label">Status</span>}
-                        name="is_active"
-                        valuePropName="checked"
+                    <Col xs={24} md={6}>
+                      <Switch
+                        checked={variant.is_default}
+                        onChange={(v) => {
+                          const arr = [...variants];
+                          arr[index].is_default = v;
+                          setVariants(arr);
+                        }}
+                      />
+                      <Text style={{ marginLeft: 8 }}>Default Variant</Text>
+                    </Col>
+
+                    {/* ATTRIBUTES */}
+                    <Col xs={24}>
+                      <Card
+                        size="small"
+                        title="Attributes"
+                        extra={
+                          <Button
+                            size="small"
+                            icon={<PlusOutlined />}
+                            onClick={() => addAttribute(index)}
+                          >
+                            Add Attribute
+                          </Button>
+                        }
                       >
-                        <Switch
-                          checkedChildren="Active"
-                          unCheckedChildren="Inactive"
-                          className="form-switch"
-                          defaultChecked
-                        />
-                      </Form.Item>
+                        {variant.attributes.map((attr: any, aIndex: number) => (
+                          <Row
+                            gutter={12}
+                            key={aIndex}
+                            style={{ marginBottom: 10 }}
+                          >
+                            <Col xs={10}>
+                              <Input
+                                placeholder="Attribute Key"
+                                value={attr.key}
+                                onChange={(e) => {
+                                  const arr = [...variants];
+                                  arr[index].attributes[aIndex].key =
+                                    e.target.value;
+                                  setVariants(arr);
+                                }}
+                              />
+                            </Col>
+                            <Col xs={10}>
+                              <Input
+                                placeholder="Attribute Value"
+                                value={attr.value}
+                                onChange={(e) => {
+                                  const arr = [...variants];
+                                  arr[index].attributes[aIndex].value =
+                                    e.target.value;
+                                  setVariants(arr);
+                                }}
+                              />
+                            </Col>
+                            <Col xs={4}>
+                              <Button
+                                danger
+                                icon={<DeleteOutlined />}
+                                onClick={() => removeAttribute(index, aIndex)}
+                              />
+                            </Col>
+                          </Row>
+                        ))}
+                      </Card>
                     </Col>
                   </Row>
-                </Col>
-              </Row>
-            </Card>
-          </Col>
-
-          {/* Contact Information Section */}
-          <Col xs={24}>
-            <Card
-              title={<span className="section-title">Contact Information</span>}
-              className="form-section-card"
-              headStyle={{ borderBottom: "1px solid #f0f0f0" }}
-            >
-              <Row gutter={[16, 16]}>
-                <Col xs={24} sm={12}>
-                  <Form.Item<any>
-                    label={
-                      <span className="form-label">Mobile No for SMS</span>
-                    }
-                    name="contact_phone_number"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please input mobile number!",
-                      },
-                      { validator: phoneValidator },
-                    ]}
-                  >
-                    <Input
-                      addonBefore="+880"
-                      size="large"
-                      placeholder="1XXXXXXXXX"
-                      className="form-input"
-                    />
-                  </Form.Item>
-                </Col>
-
-                <Col xs={24} sm={12}>
-                  <Form.Item<any>
-                    label={
-                      <span className="form-label">Relation to Product</span>
-                    }
-                    name="contact_phone_number_relation"
-                  >
-                    <Input
-                      placeholder="Father/Mother/Guardian"
-                      size="large"
-                      className="form-input"
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Card>
-          </Col>
-
-          {/* Personal Information Section */}
-          <Col xs={24}>
-            <Card
-              title={
-                <span className="section-title">Personal Information</span>
-              }
-              className="form-section-card"
-              headStyle={{ borderBottom: "1px solid #f0f0f0" }}
-            >
-              <Row gutter={[16, 16]}>
-                <Col xs={24} sm={12} md={8} lg={6}>
-                  <Form.Item<any>
-                    label={<span className="form-label">Date of Birth</span>}
-                    name="date_of_birth"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please select date of birth!",
-                      },
-                    ]}
-                  >
-                    <DatePicker
-                      placeholder="Select date"
-                      format="YYYY-MM-DD"
-                      size="large"
-                      className="w-full"
-                      disabledDate={(current) =>
-                        current && current > dayjs().endOf("day")
-                      }
-                    />
-                  </Form.Item>
-                </Col>
-
-                <Col xs={24} sm={12} md={8} lg={6}>
-                  <GenderSelect />
-                </Col>
-
-                <Col xs={24} sm={12} md={8} lg={6}>
-                  <ReligionSelect />
-                </Col>
-
-                <Col xs={24} sm={12} md={8} lg={6}>
-                  <Form.Item<any>
-                    label={<span className="form-label">Phone Number</span>}
-                    name="phone_number"
-                    rules={[{ validator: phoneValidator }]}
-                  >
-                    <Input
-                      addonBefore="+880"
-                      placeholder="1XXXXXXXXX"
-                      size="large"
-                      className="form-input"
-                    />
-                  </Form.Item>
-                </Col>
-
-                <Col xs={24} sm={12} md={8} lg={6}>
-                  <Form.Item<any>
-                    label={<span className="form-label">Email</span>}
-                    name="email"
-                    rules={[
-                      { type: "email", message: "Please enter a valid email!" },
-                    ]}
-                  >
-                    <Input
-                      placeholder="student@example.com"
-                      size="large"
-                      className="form-input"
-                    />
-                  </Form.Item>
-                </Col>
-
-                <Col xs={24} sm={12}>
-                  <Form.Item<any>
-                    label={<span className="form-label">Present Address</span>}
-                    name="present_address"
-                  >
-                    <Input
-                      placeholder="Current residential address"
-                      size="large"
-                      className="form-input"
-                    />
-                  </Form.Item>
-                </Col>
-
-                <Col xs={24} sm={12}>
-                  <Form.Item<any>
-                    label={
-                      <span className="form-label">Permanent Address</span>
-                    }
-                    name="permanent_address"
-                  >
-                    <Input
-                      placeholder="Permanent home address"
-                      size="large"
-                      className="form-input"
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Card>
-          </Col>
-
-          {/* Parent Information - Split into two columns on larger screens */}
-          <Col xs={24} lg={12}>
-            <Card
-              title={<span className="section-title">Father Information</span>}
-              className="form-section-card"
-              headStyle={{ borderBottom: "1px solid #f0f0f0" }}
-            >
-              <Row gutter={[16, 16]}>
-                <Col xs={24}>
-                  <Form.Item
-                    label={<span className="form-label">Father's Name</span>}
-                    name="father_name"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please input father's name!",
-                      },
-                    ]}
-                  >
-                    <Input
-                      placeholder="Father's full name"
-                      size="large"
-                      className="form-input"
-                    />
-                  </Form.Item>
-                </Col>
-
-                <Col xs={24} sm={12}>
-                  <Form.Item
-                    label={<span className="form-label">Phone Number</span>}
-                    name="father_number"
-                    rules={[{ validator: phoneValidator }]}
-                  >
-                    <Input
-                      addonBefore="+880"
-                      placeholder="1XXXXXXXXX"
-                      size="large"
-                      className="form-input"
-                    />
-                  </Form.Item>
-                </Col>
-
-                <Col xs={24} sm={12}>
-                  <Form.Item
-                    label={<span className="form-label">Profession</span>}
-                    name="father_profession"
-                  >
-                    <Input
-                      placeholder="Occupation"
-                      size="large"
-                      className="form-input"
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Card>
-          </Col>
-
-          <Col xs={24} lg={12}>
-            <Card
-              title={<span className="section-title">Mother Information</span>}
-              className="form-section-card"
-              headStyle={{ borderBottom: "1px solid #f0f0f0" }}
-            >
-              <Row gutter={[16, 16]}>
-                <Col xs={24}>
-                  <Form.Item
-                    label={<span className="form-label">Mother's Name</span>}
-                    name="mother_name"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please input mother's name!",
-                      },
-                    ]}
-                  >
-                    <Input
-                      placeholder="Mother's full name"
-                      size="large"
-                      className="form-input"
-                    />
-                  </Form.Item>
-                </Col>
-
-                <Col xs={24} sm={12}>
-                  <Form.Item
-                    label={<span className="form-label">Phone Number</span>}
-                    name="mother_phone_number"
-                    rules={[{ validator: phoneValidator }]}
-                  >
-                    <Input
-                      addonBefore="+880"
-                      placeholder="1XXXXXXXXX"
-                      size="large"
-                      className="form-input"
-                    />
-                  </Form.Item>
-                </Col>
-
-                <Col xs={24} sm={12}>
-                  <Form.Item
-                    label={<span className="form-label">Profession</span>}
-                    name="mother_profession"
-                  >
-                    <Input
-                      placeholder="Occupation"
-                      size="large"
-                      className="form-input"
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Card>
-          </Col>
-
-          {/* Local Guardian Information */}
-          <Col xs={24}>
-            <Card
-              title={
-                <span className="section-title">
-                  Local Guardian Information
-                </span>
-              }
-              className="form-section-card"
-              headStyle={{ borderBottom: "1px solid #f0f0f0" }}
-            >
-              <Row gutter={[16, 16]}>
-                <Col xs={24} sm={12} md={8}>
-                  <Form.Item<any>
-                    label={<span className="form-label">Guardian Name</span>}
-                    name="local_guardian_name"
-                  >
-                    <Input
-                      placeholder="Full name"
-                      size="large"
-                      className="form-input"
-                    />
-                  </Form.Item>
-                </Col>
-
-                <Col xs={24} sm={12} md={8}>
-                  <Form.Item<any>
-                    label={<span className="form-label">Phone Number</span>}
-                    name="local_guardian_phone_number"
-                    rules={[{ validator: phoneValidator }]}
-                  >
-                    <Input
-                      addonBefore="+880"
-                      placeholder="1XXXXXXXXX"
-                      size="large"
-                      className="form-input"
-                    />
-                  </Form.Item>
-                </Col>
-
-                <Col xs={24} sm={12} md={8}>
-                  <Form.Item<any>
-                    label={<span className="form-label">Relation</span>}
-                    name="local_guardian_relation"
-                  >
-                    <Input
-                      placeholder="Relationship to student"
-                      size="large"
-                      className="form-input"
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
+                </Card>
+              ))}
             </Card>
           </Col>
         </Row>
       </Form>
+
+      {/* IMAGE ADD MODAL */}
+      <Modal
+        title="Add Image"
+        open={isImageModalOpen}
+        onCancel={() => setIsImageModalOpen(false)}
+        onOk={handleAddImage}
+        okText="Add"
+      >
+        <AntForm form={imageForm} layout="vertical">
+          <AntForm.Item
+            label="Image File"
+            name="image"
+            rules={[{ required: true, message: "Image is required" }]}
+          >
+            <Upload
+              listType="picture-card"
+              maxCount={1}
+              beforeUpload={() => false}
+            >
+              <div>
+                <PlusOutlined />
+                <div style={{ marginTop: 8 }}>Upload</div>
+              </div>
+            </Upload>
+          </AntForm.Item>
+
+          <AntForm.Item
+            label="Alt Text"
+            name="alt_text"
+            rules={[{ required: true, message: "Alt text required" }]}
+          >
+            <Input placeholder="Alt Text" />
+          </AntForm.Item>
+
+          <AntForm.Item label="Order" name="order">
+            <Input type="number" placeholder="Order number" />
+          </AntForm.Item>
+
+          <AntForm.Item
+            label="Feature Image"
+            name="is_feature"
+            valuePropName="checked"
+          >
+            <Switch />
+          </AntForm.Item>
+        </AntForm>
+      </Modal>
     </div>
   );
 };

@@ -22,8 +22,6 @@ import CreateProduct from "../modules/Products/components/CreateProduct";
 import UpdateProduct from "../modules/Products/components/UpdateProduct";
 import ProductView from "../modules/Products/components/ProductView";
 import OrdersPage from "../modules/Orders/pages/OrdersPage";
-import CreateOrder from "../modules/Orders/components/CreateOrder";
-import UpdateOrder from "../modules/Orders/components/UpdateOrder";
 import EarningReportPage from "../modules/Earnings&Reports/pages/EarningReportPage";
 import CreateEarningReport from "../modules/Earnings&Reports/components/CreateEarningReport";
 import UpdateEarningReport from "../modules/Earnings&Reports/components/UpdateEarningReport";
@@ -32,6 +30,8 @@ import ProfileSettingPage from "../modules/Profile&Settings/pages/ProfileSetting
 import CreateProfileSetting from "../modules/Profile&Settings/components/CreateProfileSetting";
 import UpdateProfileSetting from "../modules/Profile&Settings/components/UpdateProfileSetting";
 import ProfileSettingView from "../modules/Profile&Settings/components/ProfileSettingView";
+import InvoicesPage from "../modules/invoices/pages/InvoicesPage";
+import MoneyReceiptPage from "../modules/money-receipt/pages/MoneyReceiptPage";
 
 const router = createBrowserRouter([
   {
@@ -76,27 +76,33 @@ const router = createBrowserRouter([
       // orders
       {
         path: "/orders",
-        element: (
-          <WithPermission requiredPermission="orders">
-            <Accounts />
-          </WithPermission>
-        ),
+        element: <Accounts />,
         children: [
           {
             path: "/orders",
             element: <OrdersPage />,
           },
+        ],
+      },
+      // invoices
+      {
+        path: "/invoices",
+        element: <Accounts />,
+        children: [
           {
-            path: "create",
-            element: <CreateOrder />,
+            path: "/invoices",
+            element: <InvoicesPage />,
           },
+        ],
+      },
+      // Money-receipt
+      {
+        path: "/money-receipt",
+        element: <Accounts />,
+        children: [
           {
-            path: "update/:orderId",
-            element: <UpdateOrder />,
-          },
-          {
-            path: "product-view/:productId",
-            element: <ProductView />,
+            path: "/money-receipt",
+            element: <MoneyReceiptPage />,
           },
         ],
       },

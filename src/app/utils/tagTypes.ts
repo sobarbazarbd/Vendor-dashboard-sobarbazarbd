@@ -11,6 +11,8 @@ export const TagTypes = {
   //
   PRODUCTS: "Products",
   ORDERS: "Orders",
+  INVOICES: "Invoices",
+  MONEY_RECEIPTS: "Money_Receipts",
   EARNING_REPORT: "Earning_Report",
   PROFILE_SETTING: "Profile_Setting",
 

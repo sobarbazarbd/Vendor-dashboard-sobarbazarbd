@@ -12,7 +12,7 @@ const ordersEndpoint = api.injectEndpoints({
       FilterTypes
     >({
       query: (params) => ({
-        url: "/api/v1.0/orders/",
+        url: "/api/v1.0/stores/orders/",
         params,
       }),
       providesTags: [
@@ -25,7 +25,7 @@ const ordersEndpoint = api.injectEndpoints({
 
     createOrder: builder.mutation<ApiResponse<ICreateOrder>, FormData>({
       query: (data) => ({
-        url: "/api/v1.0/orders/",
+        url: "/api/v1.0/stores/orders/",
         method: "POST",
         body: data,
       }),
@@ -42,7 +42,7 @@ const ordersEndpoint = api.injectEndpoints({
 
     getSingleOrder: builder.query<ApiResponse<any>, number>({
       query: (studId) => ({
-        url: `/api/v1.0/orders/${studId}/`,
+        url: `/api/v1.0/stores/orders/${studId}/`,
       }),
 
       providesTags: [
@@ -55,7 +55,7 @@ const ordersEndpoint = api.injectEndpoints({
 
     deleteOrder: builder.mutation<ApiResponse<IOrders>, { id: any }>({
       query: ({ id }) => ({
-        url: `/api/v1.0/orders/${id}/`,
+        url: `/api/v1.0/stores/orders/${id}/`,
         method: "DELETE",
       }),
       invalidatesTags: [
@@ -75,7 +75,7 @@ const ordersEndpoint = api.injectEndpoints({
       { id: number | undefined; data: FormData }
     >({
       query: ({ id, data }) => ({
-        url: `/api/v1.0/orders/${id}/`,
+        url: `/api/v1.0/stores/orders/${id}/update-status/`,
         method: "PATCH",
         body: data,
       }),

@@ -12,6 +12,9 @@ interface CommonSelectProps {
   onChange?: (value: any) => void;
   allowClear?: boolean;
   className?: string;
+  onSearch?: (value: string) => void; // NEW
+
+  loading?: boolean;
 }
 
 export const CommonSelect = ({
@@ -22,8 +25,10 @@ export const CommonSelect = ({
   mode,
   value,
   onChange,
+  onSearch, // NEW
   allowClear = true,
   className = "",
+  loading = false, // NEW
 }: CommonSelectProps) => {
   return (
     <Form.Item label={label} name={name}>
@@ -35,6 +40,10 @@ export const CommonSelect = ({
         value={value}
         onChange={onChange}
         options={options}
+        showSearch
+        loading={loading} // NEW
+        filterOption={false} // IMPORTANT: disable client filter for server search
+        onSearch={onSearch} // NEW - triggers search API
       />
     </Form.Item>
   );

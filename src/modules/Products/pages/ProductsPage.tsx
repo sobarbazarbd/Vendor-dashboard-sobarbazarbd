@@ -86,7 +86,7 @@ const ProductsPage = () => {
         <Row gutter={[16, 16]} align="middle" justify="space-between">
           <Col className="-mt-5">
             {!createPermission && (
-              <Link to={"/product/create"}>
+              <Link to={"/products/create"}>
                 <Button
                   type="primary"
                   icon={<PlusOutlined />}
@@ -100,7 +100,7 @@ const ProductsPage = () => {
 
           {/* Search Section */}
           <Col xs={24} sm={24} md={8} lg={18} xl={18}>
-            <Row align="middle" justify="end" gutter={12}>
+            <Row gutter={12}>
               <Col className="-mt-5">
                 <SearchComponent
                   onSearch={(value) =>

@@ -63,24 +63,6 @@ export const RangePickerComponent = ({
   );
 };
 
-// export const RangePickerComponent = ({
-//   onChange,
-//   format = "YYYY-MM-DD",
-//   ...props
-// }: any) => {
-//   const handleChange = (
-//     dates: [moment.Moment | null, moment.Moment | null]
-//   ) => {
-//     if (dates[0] && dates[1]) {
-//       const formattedDates = [dates[0].format(format), dates[1].format(format)];
-//       onChange(formattedDates);
-//     } else {
-//       onChange([null, null]);
-//     }
-//   };
-
-//   return <RangePicker {...props} format={format} onChange={handleChange} />;
-// };
 
 export const CreateCommonButton = ({ to, btnName }: any) => {
   return (

@@ -1,53 +1,25 @@
-import { Space, Tag } from "antd";
-import type { ColumnsType } from "antd/es/table";
-import ViewButton from "../../../common/CommonAnt/Button/ViewButton";
-
-import { useNavigate } from "react-router-dom";
-import { useGetDashboardDataQuery } from "../../Dashboard/api/dashoboardEndPoints";
-import { GetPermission } from "../../../utilities/permission";
-import {
-  actionNames,
-  moduleNames,
-} from "../../../utilities/permissionConstant";
-import DeleteButton from "../../../common/CommonAnt/Button/DeleteButton";
+import { ColumnsType } from "antd/es/table";
+import { Tag, Space } from "antd";
+import dayjs from "dayjs";
+import { useDispatch } from "react-redux";
+import UpdateOrder from "../components/UpdateOrder";
+import { showModal } from "../../../app/features/modalSlice";
 import EditButton from "../../../common/CommonAnt/Button/EditButton";
-import { capitalize } from "../../../common/capitalize/Capitalize";
-import { useDeleteOrderMutation } from "../api/orderEndPoints";
 
 const statusColors: Record<string, string> = {
-  Pending: "orange",
-  Approved: "green",
-  Rejected: "red",
-  Passed: "blue",
-  Withdrawn: "purple",
-  Failed: "red",
+  pending: "orange",
+  delivered: "green",
+  cancelled: "red",
+};
+
+const paymentColors: Record<string, string> = {
+  paid: "green",
+  unpaid: "red",
+  pending: "orange",
 };
 
 const useOrderColumns = (): ColumnsType<any> => {
-  // const dispatch = useDispatch();
-  const navigate = useNavigate();
-
-  const { data: dashboardData } = useGetDashboardDataQuery({});
-  const [deleteCartItem] = useDeleteOrderMutation();
-
-  const updatePermission = GetPermission(
-    dashboardData?.data?.permissions,
-    moduleNames.student,
-    actionNames.change
-  );
-  const deletePermission = GetPermission(
-    dashboardData?.data?.permissions,
-    moduleNames.student,
-    actionNames.delete
-  );
-
-  const handleDelete = async (id: any) => {
-    try {
-      await deleteCartItem({ id }).unwrap();
-    } catch (error) {
-      console.error("Failed to delete item:", error);
-    }
-  };
+  const dispatch = useDispatch();
 
   return [
     {
@@ -55,113 +27,139 @@ const useOrderColumns = (): ColumnsType<any> => {
       title: "SL",
       align: "center",
       render: (_text, _record, index) => index + 1,
+      sorter: (a, b) => a.id - b.id, // simple numeric sort
     },
     {
       key: "1",
-      title: "Full Name",
-      dataIndex: "first_name",
-      align: "left",
-      width: 230,
-      render: (_: any, record: any) =>
-        `${record?.first_name} ${record?.last_name}`,
+      title: "Order Number",
+      dataIndex: "order_number",
+      align: "center",
+      sorter: (a, b) => a.order_number.localeCompare(b.order_number),
     },
     {
       key: "2",
-      title: "UserID",
-      dataIndex: "user",
+      title: "Status",
+      dataIndex: "status",
       align: "center",
-      width: 120,
-      sorter: (a, b) => a.user?.username?.localeCompare(b.user?.username || ""),
-      render: (user) => (user?.username ? user.username : "-"),
+      render: (status: string) => {
+        const color = statusColors[status.toLowerCase()] || "default";
+        return <Tag color={color}>{status}</Tag>;
+      },
+      sorter: (a, b) => a.status.localeCompare(b.status),
     },
     {
       key: "3",
-      title: "Class",
-      dataIndex: "current_grade_level",
+      title: "Payment Status",
+      dataIndex: "payment_status",
       align: "center",
-      render: (current_grade_level) =>
-        current_grade_level ? current_grade_level?.name : "-",
+      render: (status: string) => {
+        const color = paymentColors[status.toLowerCase()] || "default";
+        return <Tag color={color}>{status}</Tag>;
+      },
+      sorter: (a, b) => a.payment_status.localeCompare(b.payment_status),
     },
-    {
-      key: "55",
-      title: "Section",
-      dataIndex: "current_section",
-      align: "center",
-      width: 80,
-      render: (current_section) =>
-        current_section ? current_section?.name : "-",
-    },
-    {
-      key: "44",
-      title: "Session",
-      dataIndex: "current_session",
-      align: "center",
-      width: 100,
-      render: (current_session) =>
-        current_session ? current_session?.name : "-",
-    },
-    {
-      key: "66",
-      title: "Shift",
-      dataIndex: "current_shift",
-      align: "center",
-      width: 100,
-      render: (current_shift) => (current_shift ? current_shift?.name : "-"),
-    },
-
     {
       key: "4",
-      title: "Phone",
-      dataIndex: "contact_phone_number",
+      title: "Order Date",
+      dataIndex: "order_date",
       align: "center",
-      width: 150,
-      render: (phone_number) => (phone_number ? phone_number : "-"),
+      render: (date: string) => dayjs(date).format("DD MMM YYYY"),
+      sorter: (a, b) => dayjs(a.order_date).unix() - dayjs(b.order_date).unix(),
+    },
+    {
+      key: "5",
+      title: "Total Amount",
+      dataIndex: "total_amount",
+      align: "center",
+      render: (amount: number) => `$${amount.toFixed(2)}`,
+      sorter: (a, b) => a.total_amount - b.total_amount,
     },
     {
       key: "6",
-      title: "Active",
-      dataIndex: "is_active",
+      title: "Item Count",
+      dataIndex: "item_count",
       align: "center",
-      width: 100,
-      render: (is_active) =>
-        is_active ? (
-          <Tag color="green">Active</Tag>
-        ) : (
-          <Tag color="red">Inactive</Tag>
-        ),
+      sorter: (a, b) => a.item_count - b.item_count,
     },
     {
-      key: "999",
-      title: "Admission Status",
-      dataIndex: "current_admission_status",
+      key: "7",
+      title: "Subtotal",
+      dataIndex: "subtotal",
       align: "center",
-      width: 130,
-      render: (status: string) => {
-        const color = statusColors[status] || "default";
-        return (
-          <p style={{ backgroundColor: color, color: "white" }}>
-            {capitalize(status)}
-          </p>
-        );
-      },
+      render: (amount: number) => `$${amount.toFixed(2)}`,
+      sorter: (a, b) => a.subtotal - b.subtotal,
     },
     {
+      key: "8",
+      title: "Discount",
+      dataIndex: "discount",
+      align: "center",
+      render: (amount: number) => `$${amount.toFixed(2)}`,
+      sorter: (a, b) => a.discount - b.discount,
+    },
+    {
+      key: "9",
+      title: "Net Subtotal",
+      dataIndex: "net_subtotal",
+      align: "center",
+      render: (amount: number) => `$${amount.toFixed(2)}`,
+      sorter: (a, b) => a.net_subtotal - b.net_subtotal,
+    },
+    {
+      key: "10",
+      title: "Tax",
+      dataIndex: "tax",
+      align: "center",
+      render: (amount: number) => `$${amount.toFixed(2)}`,
+      sorter: (a, b) => a.tax - b.tax,
+    },
+    {
+      key: "11",
+      title: "Shipping Cost",
+      dataIndex: "shipping_cost",
+      align: "center",
+      render: (amount: number) => `$${amount.toFixed(2)}`,
+      sorter: (a, b) => a.shipping_cost - b.shipping_cost,
+    },
+    {
+      key: "12",
+      title: "Notes",
+      dataIndex: "notes",
+      align: "center",
+      render: (notes: string) => notes || "-",
+    },
+    {
+      key: "13",
+      title: "Created At",
+      dataIndex: "created_at",
+      align: "center",
+      render: (date: string) => dayjs(date).format("DD MMM YYYY"),
+      sorter: (a, b) => dayjs(a.created_at).unix() - dayjs(b.created_at).unix(),
+    },
+    {
+      key: "14",
+      title: "Updated At",
+      dataIndex: "updated_at",
+      align: "center",
+      render: (date: string) => dayjs(date).format("DD MMM YYYY"),
+      sorter: (a, b) => dayjs(a.updated_at).unix() - dayjs(b.updated_at).unix(),
+    },
+    {
+      key: "actions",
       title: "Actions",
       align: "center",
       render: (record) => (
         <Space>
-          {updatePermission && (
-            <EditButton
-              onClick={() => navigate(`/students/update/${record.id}`)}
-            />
-          )}
-
-          <ViewButton to={`student-view/${record?.id}`} />
-          {deletePermission && (
-            <DeleteButton
-              onConfirm={() => handleDelete(record.id)}
-            ></DeleteButton>
-          )}
+          <EditButton
+            onClick={() =>
+              dispatch(
+                showModal({
+                  title: "Update Order",
+                  content: <UpdateOrder id={record?.id} />,
+                })
+              )
+            }
+          />
         </Space>
       ),
     },

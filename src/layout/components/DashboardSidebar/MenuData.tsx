@@ -89,9 +89,20 @@ const MenuData: React.FC = () => {
     //   label: <Link to="/products">Products</Link>,
     //   icon: <LiaProductHunt />,
     // },
-    hasPermissionForModule(permissions, "student") && {
+    {
       key: "/orders",
       label: <Link to="/orders">Orders</Link>,
+      icon: <IoCartOutline />,
+    },
+    {
+      key: "/money-receipt",
+      label: <Link to="/money-receipt">Money Receipt</Link>,
+      icon: <IoCartOutline />,
+    },
+
+    {
+      key: "/invoices",
+      label: <Link to="/invoices">Invoices</Link>,
       icon: <IoCartOutline />,
     },
     hasPermissionForModule(permissions, "student") && {
