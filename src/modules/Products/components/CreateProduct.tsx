@@ -17,6 +17,7 @@ import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Form } from "../../../common/CommonAnt";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Editor } from "@tinymce/tinymce-react";
 
 import {
   useCreateProductMutation,
@@ -35,6 +36,7 @@ const CreateProduct = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 500);
+  const [description, setDescription] = useState("");
 
   const [create, { isLoading, isSuccess }] = useCreateProductMutation();
   const { data: subCategoriesData } = useGetSubCategoriesQuery({
@@ -47,6 +49,7 @@ const CreateProduct = () => {
    * IMAGE STATE + MODAL FORM
    --------------------------------*/
   const [images, setImages] = useState<any[]>([]);
+
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   // image modal form
@@ -67,11 +70,10 @@ const CreateProduct = () => {
 
       const newImage = {
         id: 0,
-        image: "",
+        image: fileObj,
         alt_text: values.alt_text,
         is_feature: values.is_feature || false,
         order: Number(values.order) || 0,
-        file: fileObj,
       };
 
       setImages((prev) => [...prev, newImage]);
@@ -97,6 +99,9 @@ const CreateProduct = () => {
       attributes: [],
     },
   ]);
+
+  console.log("variants", variants);
+  console.log("images", images);
 
   const addVariant = () => {
     setVariants([
@@ -134,26 +139,94 @@ const CreateProduct = () => {
   /** -------------------------------
    * SUBMIT HANDLER
    --------------------------------*/
+  // const onFinish = (values: any) => {
+  //   const formData = new FormData();
+
+  //   formData.append("name", values.name);
+  //   formData.append("description", values.description || "");
+  //   formData.append("sku", values.sku || "");
+  //   formData.append("is_active", values.is_active ? "true" : "false");
+
+  //   values.subcategories?.forEach((id: number) =>
+  //     formData.append("subcategories", id.toString())
+  //   );
+
+  //   if (values.brand_or_company) {
+  //     formData.append("brand_or_company", values.brand_or_company);
+  //   }
+
+  //   formData.append(
+  //     "variants",
+  //     JSON.stringify(
+  //       variants.map((v) => ({
+  //         name: v.name,
+  //         sku: v.sku,
+  //         price: Number(v.price),
+  //         stock: Number(v.stock),
+  //         is_default: v.is_default,
+  //         attributes: Object.fromEntries(
+  //           v.attributes.map((a: any) => [a.key, a.value])
+  //         ),
+  //       }))
+  //     )
+  //   );
+
+  //   /** -------------------------------
+  //    * IMAGE APPEND TO FORMDATA
+  //    --------------------------------*/
+  //   images.forEach((img) => {
+  //     const meta = {
+  //       id: 0,
+  //       image: "",
+  //       alt_text: img.alt_text,
+  //       is_feature: img.is_feature,
+  //       order: img.order,
+  //       variant: null,
+  //     };
+
+  //     formData.append(
+  //       "images",
+  //       new Blob([JSON.stringify(meta)], {
+  //         type: "application/json",
+  //       })
+  //     );
+
+  //     formData.append("image_files", img.image.originFileObj);
+  //   });
+
+  //   // NO DELETE IDS
+  //   // formData.append("delete_image_ids", JSON.stringify([]));
+
+  //   console.log("formData", formData);
+  //   console.log("values", values);
+
+  //   create(formData);
+  // };
+
   const onFinish = (values: any) => {
     const formData = new FormData();
 
+    // BASIC FIELDS
     formData.append("name", values.name);
-    formData.append("description", values.description || "");
+    formData.append("description", description || "");
     formData.append("sku", values.sku || "");
-    formData.append("is_active", values.is_active ? "true" : "false");
+    formData.append("is_active", String(values.is_active));
 
+    // SUBCATEGORIES (array)
     values.subcategories?.forEach((id: number) =>
       formData.append("subcategories", id.toString())
     );
 
-    if (values.brand_or_company) {
-      formData.append("brand_or_company", values.brand_or_company);
+    // BRAND
+    if (values.brand_or_company !== undefined) {
+      formData.append("brand_or_company", values.brand_or_company.toString());
     }
 
+    // VARIANTS (array)
     formData.append(
       "variants",
       JSON.stringify(
-        variants.map((v) => ({
+        variants.map((v: any) => ({
           name: v.name,
           sku: v.sku,
           price: Number(v.price),
@@ -166,31 +239,26 @@ const CreateProduct = () => {
       )
     );
 
-    /** -------------------------------
-     * IMAGE APPEND TO FORMDATA
-     --------------------------------*/
-    images.forEach((img) => {
-      const meta = {
-        id: 0,
-        image: "",
-        alt_text: img.alt_text,
-        is_feature: img.is_feature,
-        order: img.order,
-        variant: null,
-      };
+    // IMAGES METADATA (array)
+    formData.append(
+      "images",
+      JSON.stringify(
+        images.map((img: any, index: number) => ({
+          image: "", // backend will map file
+          variant: img.variant ?? null,
+          alt_text: img.alt_text,
+          is_feature: img.is_feature,
+          order: img.order ?? index,
+        }))
+      )
+    );
 
-      formData.append(
-        "images",
-        new Blob([JSON.stringify(meta)], {
-          type: "application/json",
-        })
-      );
-
-      formData.append("image_files", img.file.originFileObj);
+    // IMAGE FILES
+    images.forEach((img: any) => {
+      if (img.image?.originFileObj) {
+        formData.append("image_files", img.image.originFileObj);
+      }
     });
-
-    // NO DELETE IDS
-    formData.append("delete_image_ids", JSON.stringify([]));
 
     create(formData);
   };
@@ -230,10 +298,47 @@ const CreateProduct = () => {
                 </Col>
 
                 <Col xs={24}>
-                  <Form.Item label="Description" name="description">
-                    <Input.TextArea
-                      rows={4}
-                      placeholder="Product Description"
+                  <Form.Item
+                    label="Description"
+                    name="description"
+                    help={!description ? "Description is required" : ""}
+                    validateStatus={!description ? "error" : ""}
+                  >
+                    <Editor
+                      apiKey="no-api-key"
+                      value={description}
+                      init={{
+                        height: 300,
+                        menubar: false,
+                        plugins: [
+                          "advlist",
+                          "autolink",
+                          "lists",
+                          "link",
+                          "image",
+                          "charmap",
+                          "preview",
+                          "anchor",
+                          "searchreplace",
+                          "visualblocks",
+                          "code",
+                          "fullscreen",
+                          "insertdatetime",
+                          "media",
+                          "table",
+                          "help",
+                          "wordcount",
+                        ],
+                        toolbar:
+                          "undo redo | formatselect | bold italic underline | \
+        alignleft aligncenter alignright | \
+        bullist numlist outdent indent | removeformat | help",
+                        content_style:
+                          "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+                      }}
+                      onEditorChange={(content: any) => {
+                        setDescription(content);
+                      }}
                     />
                   </Form.Item>
                 </Col>
@@ -303,7 +408,9 @@ const CreateProduct = () => {
                   <Col key={index} xs={24} md={6}>
                     <Card
                       hoverable
-                      cover={<img alt={img.alt_text} src={img.file.thumbUrl} />}
+                      cover={
+                        <img alt={img.alt_text} src={img.image.thumbUrl} />
+                      }
                       extra={
                         <Button
                           danger
