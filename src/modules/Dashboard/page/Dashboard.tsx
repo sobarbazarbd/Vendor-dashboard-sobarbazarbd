@@ -1,45 +1,35 @@
-import { useRef, useEffect, useState } from "react";
-import { Card, Row, Col } from "antd";
+import { useRef, useEffect } from "react";
+
 import ApexCharts from "apexcharts";
-import {
-  useGetDashboardDataQuery,
-  useGetFeeReportQuery,
-  useGetOverviewAttendanceReportQuery,
-} from "../api/dashoboardEndPoints";
-import OverallStatistic from "../components/OverallStatistic";
-import { Link } from "react-router-dom";
-import dayjs from "dayjs";
-import OverallAttendanceStatistic from "../components/OverallAttendanceStatistic";
-import AttendanceOverviewStatistic from "../components/AttendanceOverviewStatistic";
-import FeeOverviewStatistic from "../components/FeeOverviewStatistic";
+
 
 // const { Title } = Typography;
 
 // const { Option } = Select;
 
 const Dashboard = () => {
-  const { data: dashboardData } = useGetDashboardDataQuery({});
+  // const { data: dashboardData } = useGetDashboardDataQuery({});
 
-  const [feeFilterParams, setFeeFilterParams] = useState({
-    filter: "daily",
-    year: dayjs().year(),
-    month: dayjs().month() + 1,
-    grade_level_id: undefined,
-  });
+  // const [feeFilterParams, setFeeFilterParams] = useState({
+  //   filter: "daily",
+  //   year: dayjs().year(),
+  //   month: dayjs().month() + 1,
+  //   grade_level_id: undefined,
+  // });
 
-  const [filterParams, setFilterParams] = useState({
-    filter: "daily",
-    year: dayjs().year(),
-    month: dayjs().month() + 1,
-    type: "student",
-  });
+  // const [filterParams, setFilterParams] = useState({
+  //   filter: "daily",
+  //   year: dayjs().year(),
+  //   month: dayjs().month() + 1,
+  //   type: "student",
+  // });
 
-  const { data: attendanceData } =
-    useGetOverviewAttendanceReportQuery(filterParams);
-  const { data: feeData } = useGetFeeReportQuery(feeFilterParams);
+  // const { data: attendanceData } =
+  //   useGetOverviewAttendanceReportQuery(filterParams);
+  // const { data: feeData } = useGetFeeReportQuery(feeFilterParams);
 
-  const { chart_data: chartData } = attendanceData?.data || {};
-  const { chart_data: feeChartData } = feeData?.data || {};
+  // const { chart_data: chartData } = attendanceData?.data || {};
+  // const { chart_data: feeChartData } = feeData?.data || {};
 
   const performanceChartRef = useRef<HTMLDivElement>(null);
 
@@ -142,11 +132,11 @@ const Dashboard = () => {
 
   return (
     <div className="p-4">
-      <OverallStatistic dashboardInfo={dashboardData} />
+      {/* <OverallStatistic dashboardInfo={dashboardData} />
       <br />
       <OverallAttendanceStatistic
         dashboardInfo={attendanceData?.data?.summary}
-      />
+      /> */}
       <br />
       {/* === Top Cards === */}
       {/* <Row gutter={[16, 16]} className="mb-6">
@@ -170,7 +160,7 @@ const Dashboard = () => {
         </Col>
       </Row> */}
       {/* === Main Charts === */}
-      <Row gutter={[16, 16]} className="mb-6">
+      {/* <Row gutter={[16, 16]} className="mb-6">
         <Col xs={24} lg={24}>
           <AttendanceOverviewStatistic
             chartData={chartData}
@@ -178,9 +168,9 @@ const Dashboard = () => {
             setFilterParams={setFilterParams}
           />
         </Col>
-      </Row>
+      </Row> */}
       {/* Fee Collection Trend & Quick Actions */}
-      <Row gutter={[16, 16]} className="mb-6">
+      {/* <Row gutter={[16, 16]} className="mb-6">
         <Col xs={24} md={16}>
           <FeeOverviewStatistic
             feeChartData={feeChartData}
@@ -368,9 +358,10 @@ const Dashboard = () => {
             </div>
           </Card>
         </Col>
-      </Row>
+      </Row> */}
       {/* === New Sections === */}
-      <Row gutter={[16, 16]}>
+
+      {/* <Row gutter={[16, 16]}>
         <Col xs={24} md={12}>
           <Card
             title="Recent Activities"
@@ -378,7 +369,6 @@ const Dashboard = () => {
             className="shadow-sm"
           >
             <div className="space-y-4">
-              {/* Activity items */}
               <div className="flex items-start gap-3 p-2 hover:bg-gray-50 rounded transition">
                 <div className="bg-green-100 p-2 rounded-full">
                   <span className="text-green-600 text-lg">💰</span>
@@ -465,7 +455,7 @@ const Dashboard = () => {
             </div>
           </Card>
         </Col>
-      </Row>
+      </Row> */}
     </div>
   );
 };
