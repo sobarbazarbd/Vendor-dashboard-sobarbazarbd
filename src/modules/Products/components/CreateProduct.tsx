@@ -39,6 +39,7 @@ const CreateProduct = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 500);
   const [description, setDescription] = useState("");
+  const [shortDescription, setShortDescription] = useState("");
 
   const [create, { isLoading, isSuccess }] = useCreateProductMutation();
   const { data: subCategoriesData } = useGetSubCategoriesQuery({
@@ -132,6 +133,11 @@ const CreateProduct = () => {
       return;
     }
 
+    if (!shortDescription || shortDescription.trim() === "") {
+      message.error("Please add a short description!");
+      return;
+    }
+
     if (variants.length === 0 || !variants[0].name || !variants[0].sku) {
       message.error("Please add at least one variant with name and SKU!");
       return;
@@ -162,6 +168,7 @@ const CreateProduct = () => {
     const formData = new FormData();
 
     formData.append("name", values.name);
+    formData.append("short_description", shortDescription);
     formData.append("description", description);
     formData.append("sku", values.sku || "");
     formData.append("is_active", values.is_active ? "true" : "false");
@@ -251,6 +258,24 @@ const CreateProduct = () => {
                 <Col xs={24} md={12}>
                   <Form.Item label="SKU" name="sku">
                     <Input size="large" placeholder="SKU" />
+                  </Form.Item>
+                </Col>
+
+                <Col xs={24}>
+                  <Form.Item
+                    label="Short Description"
+                    name="short_description"
+                    help={!shortDescription ? "Short description is required" : ""}
+                    validateStatus={!shortDescription ? "error" : ""}
+                  >
+                    <Input.TextArea
+                      rows={3}
+                      maxLength={250}
+                      showCount
+                      placeholder="Short Description (max 250 chars)"
+                      value={shortDescription}
+                      onChange={e => setShortDescription(e.target.value)}
+                    />
                   </Form.Item>
                 </Col>
 
