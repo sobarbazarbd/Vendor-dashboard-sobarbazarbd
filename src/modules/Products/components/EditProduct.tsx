@@ -447,7 +447,7 @@ const EditProduct = () => {
 
               <Row gutter={[16, 16]}>
                 {/* Existing Images */}
-                {existingImages.map((img, index) => (
+                {existingImages.map((img:any) => (
                   <Col key={`existing-${img.id}`} xs={24} md={6}>
                     <Card
                       hoverable
