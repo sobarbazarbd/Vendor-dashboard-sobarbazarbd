@@ -19,7 +19,6 @@ import ViewRolePermission from "../modules/settings/role & permission/components
 import WithPermission from "./withPermissionRouter";
 import ProductsPage from "../modules/Products/pages/ProductsPage";
 import CreateProduct from "../modules/Products/components/CreateProduct";
-import UpdateProduct from "../modules/Products/components/UpdateProduct";
 import ProductView from "../modules/Products/components/ProductView";
 import OrdersPage from "../modules/Orders/pages/OrdersPage";
 import EarningReportPage from "../modules/Earnings&Reports/pages/EarningReportPage";
@@ -34,6 +33,7 @@ import InvoicesPage from "../modules/invoices/pages/InvoicesPage";
 import MoneyReceiptPage from "../modules/money-receipt/pages/MoneyReceiptPage";
 import StockReservationPage from "../modules/stock-reservations/pages/StockReservationPage";
 import StoreProfilePage from "../modules/store-settings/pages/StoreProfilePage";
+import EditProduct from "../modules/Products/components/EditProduct";
 
 const router = createBrowserRouter([
   {
@@ -66,7 +66,7 @@ const router = createBrowserRouter([
           },
           {
             path: "update/:productId",
-            element: <UpdateProduct />,
+            element: <EditProduct />,
           },
           {
             path: "product-view/:productId",

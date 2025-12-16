@@ -137,9 +137,9 @@ const useProductColumns = (): ColumnsType<any> => {
       align: "center",
       render: (record) => (
         <Space>
-          {updatePermission && (
+          {!updatePermission && (
             <EditButton
-              onClick={() => navigate(`/students/update/${record.id}`)}
+              onClick={() => navigate(`/products/update/${record.id}`)}
             />
           )}
 

@@ -39,6 +39,7 @@ const CreateProduct = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 500);
   const [description, setDescription] = useState("");
+  const [shortDescription, setShortDescription] = useState("");
 
   const [create, { isLoading, isSuccess }] = useCreateProductMutation();
   const { data: subCategoriesData } = useGetSubCategoriesQuery({
@@ -127,8 +128,17 @@ const CreateProduct = () => {
   };
 
   const onFinish = (values: any) => {
-    if (!description || description === "<p></p>" || description.trim() === "") {
+    if (
+      !description ||
+      description === "<p></p>" ||
+      description.trim() === ""
+    ) {
       message.error("Please add a product description!");
+      return;
+    }
+
+    if (!shortDescription || shortDescription.trim() === "") {
+      message.error("Please add a short description!");
       return;
     }
 
@@ -141,7 +151,9 @@ const CreateProduct = () => {
       (v) => v.name && v.sku && Number(v.price) > 0
     );
     if (!hasValidVariant) {
-      message.error("At least one variant must have a valid name, SKU, and price!");
+      message.error(
+        "At least one variant must have a valid name, SKU, and price!"
+      );
       return;
     }
 
@@ -152,16 +164,22 @@ const CreateProduct = () => {
 
     // Validate at least one attribute per variant
     const invalidVariant = variants.find(
-      (v) => !v.attributes || v.attributes.length === 0 || v.attributes.some((a: any) => !a.key || !a.value)
+      (v) =>
+        !v.attributes ||
+        v.attributes.length === 0 ||
+        v.attributes.some((a: any) => !a.key || !a.value)
     );
     if (invalidVariant) {
-      message.error("Each variant must have at least one attribute with both key and value!");
+      message.error(
+        "Each variant must have at least one attribute with both key and value!"
+      );
       return;
     }
 
     const formData = new FormData();
 
     formData.append("name", values.name);
+    formData.append("short_description", shortDescription);
     formData.append("description", description);
     formData.append("sku", values.sku || "");
     formData.append("is_active", values.is_active ? "true" : "false");
@@ -172,7 +190,10 @@ const CreateProduct = () => {
       });
     }
 
-    if (values.brand_or_company !== undefined && values.brand_or_company !== null) {
+    if (
+      values.brand_or_company !== undefined &&
+      values.brand_or_company !== null
+    ) {
       formData.append("brand_or_company", values.brand_or_company.toString());
     }
 
@@ -213,8 +234,8 @@ const CreateProduct = () => {
     console.log("Variants:", variantsPayload);
     console.log("Images Metadata:", imagesMetadata);
     console.log("Image Files Count:", images.length);
-    
-    for (let pair of formData.entries()) {
+
+    for (const pair of formData.entries()) {
       console.log(pair[0], pair[1]);
     }
 
@@ -251,6 +272,24 @@ const CreateProduct = () => {
                 <Col xs={24} md={12}>
                   <Form.Item label="SKU" name="sku">
                     <Input size="large" placeholder="SKU" />
+                  </Form.Item>
+                </Col>
+
+                <Col xs={24}>
+                  <Form.Item
+                    label="Short Description"
+                    name="short_description"
+                    help={!shortDescription ? "Short description is required" : ""}
+                    validateStatus={!shortDescription ? "error" : ""}
+                  >
+                    <Input.TextArea
+                      rows={3}
+                      maxLength={250}
+                      showCount
+                      placeholder="Short Description (max 250 chars)"
+                      value={shortDescription}
+                      onChange={e => setShortDescription(e.target.value)}
+                    />
                   </Form.Item>
                 </Col>
 
@@ -535,9 +574,15 @@ const CreateProduct = () => {
                                 onBlur={(e) => {
                                   // Allow custom input on blur
                                   const arr = [...variants];
-                                  const inputValue = (e.target as HTMLInputElement).value;
-                                  if (!arr[index].attributes[aIndex].key && inputValue) {
-                                    arr[index].attributes[aIndex].key = inputValue;
+                                  const inputValue = (
+                                    e.target as HTMLInputElement
+                                  ).value;
+                                  if (
+                                    !arr[index].attributes[aIndex].key &&
+                                    inputValue
+                                  ) {
+                                    arr[index].attributes[aIndex].key =
+                                      inputValue;
                                     setVariants(arr);
                                   }
                                 }}
@@ -567,9 +612,15 @@ const CreateProduct = () => {
                                 onBlur={(e) => {
                                   // Allow custom input on blur
                                   const arr = [...variants];
-                                  const inputValue = (e.target as HTMLInputElement).value;
-                                  if (!arr[index].attributes[aIndex].value && inputValue) {
-                                    arr[index].attributes[aIndex].value = inputValue;
+                                  const inputValue = (
+                                    e.target as HTMLInputElement
+                                  ).value;
+                                  if (
+                                    !arr[index].attributes[aIndex].value &&
+                                    inputValue
+                                  ) {
+                                    arr[index].attributes[aIndex].value =
+                                      inputValue;
                                     setVariants(arr);
                                   }
                                 }}

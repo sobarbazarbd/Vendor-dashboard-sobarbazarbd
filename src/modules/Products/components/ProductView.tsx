@@ -67,8 +67,13 @@ const ProductView = () => {
               <Divider />
 
               <Paragraph style={{ fontSize: 16 }}>
-                {product?.description}
+                {product?.short_description}
               </Paragraph>
+              {/* DESCRIPTION dangerouslySetInnerHTML */}
+              <p
+                style={{ fontSize: 16 }}
+                dangerouslySetInnerHTML={{ __html: product?.description || "" }}
+              />
 
               <Divider />
 

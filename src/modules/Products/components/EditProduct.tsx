@@ -43,9 +43,11 @@ const EditProduct = () => {
   const debouncedSearch = useDebounce(searchTerm, 500);
   const [description, setDescription] = useState("");
 
-  const { data: productData, isLoading: isLoadingProduct } = useGetSingleProductQuery(Number(productId));
+  const { data: productData, isLoading: isLoadingProduct } =
+    useGetSingleProductQuery(Number(productId));
   const [update, { isLoading, isSuccess }] = useUpdateProductMutation();
-  
+
+
   const { data: subCategoriesData } = useGetSubCategoriesQuery({
     search: debouncedSearch || undefined,
   });
@@ -64,13 +66,14 @@ const EditProduct = () => {
   useEffect(() => {
     if (productData?.data) {
       const product = productData.data;
-      
+
       form.setFieldsValue({
         name: product.name,
         sku: product.sku,
         is_active: product.is_active,
         brand_or_company: product.brand_or_company?.id,
         subcategories: product.subcategories?.map((s: any) => s.id),
+        description: product.description,
       });
 
       setDescription(product.description || "");
@@ -86,7 +89,10 @@ const EditProduct = () => {
           stock: v.stock,
           is_default: v.is_default,
           attributes: v.attributes
-            ? Object.entries(v.attributes).map(([key, value]) => ({ key, value }))
+            ? Object.entries(v.attributes).map(([key, value]) => ({
+                key,
+                value,
+              }))
             : [{ key: "", value: "" }],
         }));
         setVariants(loadedVariants);
@@ -178,7 +184,11 @@ const EditProduct = () => {
   };
 
   const onFinish = (values: any) => {
-    if (!description || description === "<p></p>" || description.trim() === "") {
+    if (
+      !description ||
+      description === "<p></p>" ||
+      description.trim() === ""
+    ) {
       message.error("Please add a product description!");
       return;
     }
@@ -192,7 +202,9 @@ const EditProduct = () => {
       (v) => v.name && v.sku && Number(v.price) > 0
     );
     if (!hasValidVariant) {
-      message.error("At least one variant must have a valid name, SKU, and price!");
+      message.error(
+        "At least one variant must have a valid name, SKU, and price!"
+      );
       return;
     }
 
@@ -204,7 +216,9 @@ const EditProduct = () => {
         v.attributes.some((a: any) => !a.key || !a.value)
     );
     if (invalidVariant) {
-      message.error("Each variant must have at least one attribute with both key and value!");
+      message.error(
+        "Each variant must have at least one attribute with both key and value!"
+      );
       return;
     }
 
@@ -226,7 +240,10 @@ const EditProduct = () => {
       });
     }
 
-    if (values.brand_or_company !== undefined && values.brand_or_company !== null) {
+    if (
+      values.brand_or_company !== undefined &&
+      values.brand_or_company !== null
+    ) {
       formData.append("brand_or_company", values.brand_or_company.toString());
     }
 
@@ -271,7 +288,7 @@ const EditProduct = () => {
     const newImagesMetadata = images.map((img: any, index: number) => ({
       alt_text: img.alt_text || "",
       is_feature: img.is_feature || false,
-      order: img.order ?? (existingImages.length + index),
+      order: img.order ?? existingImages.length + index,
     }));
 
     const allImagesMetadata = [...existingImagesMetadata, ...newImagesMetadata];
@@ -447,7 +464,7 @@ const EditProduct = () => {
 
               <Row gutter={[16, 16]}>
                 {/* Existing Images */}
-                {existingImages.map((img:any) => (
+                {existingImages.map((img: any) => (
                   <Col key={`existing-${img.id}`} xs={24} md={6}>
                     <Card
                       hoverable
@@ -537,7 +554,9 @@ const EditProduct = () => {
               {variants.map((variant, index) => (
                 <Card
                   key={index}
-                  title={`Variant ${index + 1} ${variant.id ? `(ID: ${variant.id})` : "(New)"}`}
+                  title={`Variant ${index + 1} ${
+                    variant.id ? `(ID: ${variant.id})` : "(New)"
+                  }`}
                   extra={
                     <Button
                       danger
