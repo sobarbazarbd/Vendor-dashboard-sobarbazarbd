@@ -4,23 +4,42 @@ export const ATTRIBUTE_KEYS = [
   "Voltage", "Frequency", "Power", "Connector", "Ports", "Dimensions", "Height", "Width", "Depth", "Thickness",
   "Shape", "Pattern", "Finish", "Style", "Gender", "Age Group", "Season", "Occasion", "Fit", "Neckline",
   "Sleeve", "Length", "Closure", "Strap", "Heel Height", "Toe Shape", "Lining", "Sole", "Insole", "Outsole",
-  "Frame Material", "Lens Material", "Lens Color", "Frame Color", "Water Resistance", "Dial Color", "Band Color", "Band Material", "Movement", "Features",
-  "Compatible Devices", "Release Year", "Edition", "Language", "Pages", "Genre", "Format", "Publisher", "Author", "ISBN",
-  "Country", "Region", "City", "Ingredients", "Allergens", "Calories", "Serving Size", "Expiration Date", "Manufacture Date", "Certification",
-  "Safety", "Eco Friendly", "Recyclable", "Handmade", "Origin", "Care Instructions", "Usage", "Storage", "Temperature", "Humidity",
-  "Light Source", "Bulb Type", "Energy Rating", "Noise Level", "Max Load", "Min Load", "Connectivity", "Refresh Rate", "Aspect Ratio", "Contrast Ratio"
-  // ...add more as needed to reach 100+
+  "Frame Material", "Lens Material", "Lens Color", "Frame Color", "Water Resistance", "Dial Color", "Band Color", 
+  "Band Material", "Movement", "Features", "Compatible Devices", "Release Year", "Edition", "Language", "Pages", 
+  "Genre", "Format", "Publisher", "Author", "ISBN", "Country", "Region", "City", "Ingredients", "Allergens", 
+  "Calories", "Serving Size", "Expiration Date", "Manufacture Date", "Certification", "Safety", "Eco Friendly", 
+  "Recyclable", "Handmade", "Origin", "Care Instructions", "Usage", "Storage", "Temperature", "Humidity",
+  "Light Source", "Bulb Type", "Energy Rating", "Noise Level", "Max Load", "Min Load", "Connectivity", 
+  "Refresh Rate", "Aspect Ratio", "Contrast Ratio", "Screen Size", "Panel Type", "Response Time", "Brightness"
 ];
 
 export const ATTRIBUTE_VALUES = [
   "Red", "Blue", "Green", "Black", "White", "Yellow", "Pink", "Purple", "Orange", "Brown",
-  "Silver", "Gold", "Gray", "Beige", "Navy", "1GB", "2GB", "4GB", "8GB", "16GB",
-  "32GB", "64GB", "128GB", "256GB", "512GB", "1TB", "2TB", "3TB", "4TB", "5TB",
-  "Small", "Medium", "Large", "XL", "XXL", "Cotton", "Polyester", "Leather", "Metal", "Plastic",
-  "Glass", "Wood", "Rubber", "Silicone", "Waterproof", "Dustproof", "Shockproof", "Bluetooth 5.0", "Bluetooth 4.2", "WiFi 6",
-  "WiFi 5", "Android", "iOS", "Windows", "MacOS", "Linux", "AMOLED", "LCD", "IPS", "LED",
-  "Quad Core", "Octa Core", "Snapdragon", "MediaTek", "Exynos", "Intel", "AMD", "Apple", "Samsung", "Sony",
-  "2020", "2021", "2022", "2023", "2024", "New", "Used", "Refurbished", "Original", "Compatible",
-  "Rechargeable", "Disposable", "Fast Charging", "Wireless", "USB-C", "Micro USB", "Lightning", "HDMI", "VGA", "DVI"
-  // ...add more as needed to reach 1000+
+  "Silver", "Gold", "Gray", "Beige", "Navy", "Maroon", "Teal", "Cyan", "Magenta", "Lime",
+  "1GB", "2GB", "4GB", "8GB", "16GB", "32GB", "64GB", "128GB", "256GB", "512GB", "1TB", "2TB",
+  "Small", "Medium", "Large", "XL", "XXL", "XXXL", "XS", "Free Size",
+  "Cotton", "Polyester", "Leather", "Metal", "Plastic", "Glass", "Wood", "Rubber", "Silicone", "Nylon",
+  "Waterproof", "Dustproof", "Shockproof", "Scratch Resistant", "Anti-Glare",
+  "Bluetooth 5.0", "Bluetooth 4.2", "Bluetooth 5.1", "Bluetooth 5.2", "Bluetooth 5.3",
+  "WiFi 6", "WiFi 5", "WiFi 4", "WiFi 6E", "WiFi 7",
+  "Android", "iOS", "Windows", "MacOS", "Linux", "Chrome OS",
+  "AMOLED", "LCD", "IPS", "LED", "OLED", "Super AMOLED", "Retina",
+  "Quad Core", "Octa Core", "Hexa Core", "Dual Core", "Deca Core",
+  "Snapdragon", "MediaTek", "Exynos", "Intel", "AMD", "Apple M1", "Apple M2",
+  "2020", "2021", "2022", "2023", "2024", "2025",
+  "New", "Used", "Refurbished", "Original", "Compatible", "Certified",
+  "Rechargeable", "Disposable", "Fast Charging", "Wireless Charging",
+  "USB-C", "Micro USB", "Lightning", "HDMI", "VGA", "DVI", "DisplayPort",
+  "720p", "1080p", "2K", "4K", "8K", "HD", "Full HD", "Ultra HD",
+  "50Hz", "60Hz", "90Hz", "120Hz", "144Hz", "165Hz", "240Hz",
+  "5000mAh", "6000mAh", "7000mAh", "10000mAh", "20000mAh",
+  "Yes", "No", "Available", "Not Available", "In Stock", "Out of Stock",
+  "Male", "Female", "Unisex", "Kids", "Adults", "Teens",
+  "Summer", "Winter", "Spring", "Autumn", "All Season",
+  "Casual", "Formal", "Sports", "Party", "Wedding", "Office",
+  "Round Neck", "V-Neck", "Collar", "High Neck", "Boat Neck",
+  "Full Sleeve", "Half Sleeve", "Sleeveless", "3/4 Sleeve",
+  "Zipper", "Button", "Velcro", "Snap", "Hook and Loop",
+  "Regular Fit", "Slim Fit", "Loose Fit", "Skinny Fit", "Oversized",
+  "Stainless Steel", "Aluminum", "Titanium", "Carbon Fiber", "Ceramic"
 ];
