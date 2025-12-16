@@ -12,6 +12,7 @@ import {
   Button,
   Upload,
   message,
+  Select,
 } from "antd";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Form } from "../../../common/CommonAnt";
@@ -27,6 +28,7 @@ import {
 
 import { CommonSelect } from "../../../common/commonField/commonFeild";
 import useDebounce from "../../../hooks/useDebounce";
+import { ATTRIBUTE_KEYS, ATTRIBUTE_VALUES } from "../attributeOptions";
 
 const { Title, Text } = Typography;
 
@@ -45,14 +47,8 @@ const CreateProduct = () => {
 
   const { data: brandData } = useGetBrandsQuery({});
 
-  /** -------------------------------
-   * IMAGE STATE + MODAL FORM
-   --------------------------------*/
   const [images, setImages] = useState<any[]>([]);
-
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
-
-  // image modal form
   const [imageForm] = AntForm.useForm();
 
   const openAddImageModal = () => {
@@ -69,15 +65,15 @@ const CreateProduct = () => {
       }
 
       const newImage = {
-        id: 0,
-        image: fileObj,
-        alt_text: values.alt_text,
+        image: fileObj.originFileObj,
+        alt_text: values.alt_text || "",
         is_feature: values.is_feature || false,
-        order: Number(values.order) || 0,
+        order: Number(values.order) || images.length,
       };
 
       setImages((prev) => [...prev, newImage]);
       setIsImageModalOpen(false);
+      message.success("Image added successfully!");
     });
   };
 
@@ -86,9 +82,6 @@ const CreateProduct = () => {
     setImages(updated);
   };
 
-  /** ---------------------------
-   * PRODUCT VARIANTS
-   -----------------------------*/
   const [variants, setVariants] = useState<any[]>([
     {
       name: "",
@@ -99,9 +92,6 @@ const CreateProduct = () => {
       attributes: [],
     },
   ]);
-
-  console.log("variants", variants);
-  console.log("images", images);
 
   const addVariant = () => {
     setVariants([
@@ -136,129 +126,97 @@ const CreateProduct = () => {
     setVariants(arr);
   };
 
-  /** -------------------------------
-   * SUBMIT HANDLER
-   --------------------------------*/
-  // const onFinish = (values: any) => {
-  //   const formData = new FormData();
-
-  //   formData.append("name", values.name);
-  //   formData.append("description", values.description || "");
-  //   formData.append("sku", values.sku || "");
-  //   formData.append("is_active", values.is_active ? "true" : "false");
-
-  //   values.subcategories?.forEach((id: number) =>
-  //     formData.append("subcategories", id.toString())
-  //   );
-
-  //   if (values.brand_or_company) {
-  //     formData.append("brand_or_company", values.brand_or_company);
-  //   }
-
-  //   formData.append(
-  //     "variants",
-  //     JSON.stringify(
-  //       variants.map((v) => ({
-  //         name: v.name,
-  //         sku: v.sku,
-  //         price: Number(v.price),
-  //         stock: Number(v.stock),
-  //         is_default: v.is_default,
-  //         attributes: Object.fromEntries(
-  //           v.attributes.map((a: any) => [a.key, a.value])
-  //         ),
-  //       }))
-  //     )
-  //   );
-
-  //   /** -------------------------------
-  //    * IMAGE APPEND TO FORMDATA
-  //    --------------------------------*/
-  //   images.forEach((img) => {
-  //     const meta = {
-  //       id: 0,
-  //       image: "",
-  //       alt_text: img.alt_text,
-  //       is_feature: img.is_feature,
-  //       order: img.order,
-  //       variant: null,
-  //     };
-
-  //     formData.append(
-  //       "images",
-  //       new Blob([JSON.stringify(meta)], {
-  //         type: "application/json",
-  //       })
-  //     );
-
-  //     formData.append("image_files", img.image.originFileObj);
-  //   });
-
-  //   // NO DELETE IDS
-  //   // formData.append("delete_image_ids", JSON.stringify([]));
-
-  //   console.log("formData", formData);
-  //   console.log("values", values);
-
-  //   create(formData);
-  // };
-
   const onFinish = (values: any) => {
+    if (!description || description === "<p></p>" || description.trim() === "") {
+      message.error("Please add a product description!");
+      return;
+    }
+
+    if (variants.length === 0 || !variants[0].name || !variants[0].sku) {
+      message.error("Please add at least one variant with name and SKU!");
+      return;
+    }
+
+    const hasValidVariant = variants.some(
+      (v) => v.name && v.sku && Number(v.price) > 0
+    );
+    if (!hasValidVariant) {
+      message.error("At least one variant must have a valid name, SKU, and price!");
+      return;
+    }
+
+    if (images.length === 0) {
+      message.error("Please add at least one product image!");
+      return;
+    }
+
+    // Validate at least one attribute per variant
+    const invalidVariant = variants.find(
+      (v) => !v.attributes || v.attributes.length === 0 || v.attributes.some((a: any) => !a.key || !a.value)
+    );
+    if (invalidVariant) {
+      message.error("Each variant must have at least one attribute with both key and value!");
+      return;
+    }
+
     const formData = new FormData();
 
-    // BASIC FIELDS
     formData.append("name", values.name);
-    formData.append("description", description || "");
+    formData.append("description", description);
     formData.append("sku", values.sku || "");
-    formData.append("is_active", String(values.is_active));
+    formData.append("is_active", values.is_active ? "true" : "false");
 
-    // SUBCATEGORIES (array)
-    values.subcategories?.forEach((id: number) =>
-      formData.append("subcategories", id.toString())
-    );
+    if (values.subcategories && values.subcategories.length > 0) {
+      values.subcategories.forEach((id: number) => {
+        formData.append("subcategories", id.toString());
+      });
+    }
 
-    // BRAND
-    if (values.brand_or_company !== undefined) {
+    if (values.brand_or_company !== undefined && values.brand_or_company !== null) {
       formData.append("brand_or_company", values.brand_or_company.toString());
     }
 
-    // VARIANTS (array)
-    formData.append(
-      "variants",
-      JSON.stringify(
-        variants.map((v: any) => ({
-          name: v.name,
-          sku: v.sku,
-          price: Number(v.price),
-          stock: Number(v.stock),
-          is_default: v.is_default,
-          attributes: Object.fromEntries(
-            v.attributes.map((a: any) => [a.key, a.value])
-          ),
-        }))
-      )
+    const validVariants = variants.filter(
+      (v: any) => v.name && v.sku && Number(v.price) > 0
     );
 
-    // IMAGES METADATA (array)
-    formData.append(
-      "images",
-      JSON.stringify(
-        images.map((img: any, index: number) => ({
-          image: "", // backend will map file
-          variant: img.variant ?? null,
-          alt_text: img.alt_text,
-          is_feature: img.is_feature,
-          order: img.order ?? index,
-        }))
-      )
-    );
+    const variantsPayload = validVariants.map((v: any) => ({
+      name: v.name.trim(),
+      sku: v.sku.trim(),
+      price: Number(v.price),
+      stock: Number(v.stock) || 0,
+      is_default: v.is_default || false,
+      attributes: Object.fromEntries(
+        (v.attributes || [])
+          .filter((a: any) => a.key && a.value)
+          .map((a: any) => [a.key.trim(), a.value.trim()])
+      ),
+    }));
 
-    // IMAGE FILES
+    formData.append("variants", JSON.stringify(variantsPayload));
+
+    const imagesMetadata = images.map((img: any, index: number) => ({
+      alt_text: img.alt_text || "",
+      is_feature: img.is_feature || false,
+      order: img.order ?? index,
+    }));
+
+    formData.append("images", JSON.stringify(imagesMetadata));
+
     images.forEach((img: any) => {
-      if (img.image?.originFileObj) {
-        formData.append("image_files", img.image.originFileObj);
+      if (img.image) {
+        formData.append("image_files", img.image);
       }
     });
+
+    console.log("=== FormData Contents ===");
+    console.log("Variants:", variantsPayload);
+    console.log("Images Metadata:", imagesMetadata);
+    console.log("Image Files Count:", images.length);
+    
+    for (let pair of formData.entries()) {
+      console.log(pair[0], pair[1]);
+    }
 
     create(formData);
   };
@@ -268,7 +226,7 @@ const CreateProduct = () => {
       message.success("Product Created Successfully!");
       navigate("/products");
     }
-  }, [isSuccess]);
+  }, [isSuccess, navigate]);
 
   return (
     <div className="create-product-form">
@@ -277,7 +235,6 @@ const CreateProduct = () => {
 
       <Form form={form} onFinish={onFinish} isLoading={isLoading}>
         <Row gutter={[24, 24]}>
-          {/* BASIC INFO */}
           <Col xs={24}>
             <Card title="Basic Product Information">
               <Row gutter={[16, 16]}>
@@ -305,7 +262,7 @@ const CreateProduct = () => {
                     validateStatus={!description ? "error" : ""}
                   >
                     <Editor
-                      apiKey="no-api-key"
+                      apiKey="233kxbtr26hptvnz70r051p006eabjgrqpjnj7psbw11yti9"
                       value={description}
                       init={{
                         height: 300,
@@ -387,7 +344,6 @@ const CreateProduct = () => {
             </Card>
           </Col>
 
-          {/* IMAGE SECTION */}
           <Col xs={24}>
             <Card
               title="Images"
@@ -401,7 +357,11 @@ const CreateProduct = () => {
                 </Button>
               }
             >
-              {images.length === 0 && <Text>No images added yet.</Text>}
+              {images.length === 0 && (
+                <Text type="secondary">
+                  No images added yet. Please add at least one image.
+                </Text>
+              )}
 
               <Row gutter={[16, 16]}>
                 {images.map((img, index) => (
@@ -409,16 +369,11 @@ const CreateProduct = () => {
                     <Card
                       hoverable
                       cover={
-                        <img alt={img.alt_text} src={img.image.thumbUrl} />
-                      }
-                      extra={
-                        <Button
-                          danger
-                          size="small"
-                          onClick={() => removeImage(index)}
-                        >
-                          Remove
-                        </Button>
+                        <img
+                          alt={img.alt_text}
+                          src={URL.createObjectURL(img.image)}
+                          style={{ height: 200, objectFit: "cover" }}
+                        />
                       }
                     >
                       <p>
@@ -430,6 +385,14 @@ const CreateProduct = () => {
                       <p>
                         <b>Feature:</b> {img.is_feature ? "Yes" : "No"}
                       </p>
+                      <Button
+                        danger
+                        size="small"
+                        block
+                        onClick={() => removeImage(index)}
+                      >
+                        Remove
+                      </Button>
                     </Card>
                   </Col>
                 ))}
@@ -437,7 +400,6 @@ const CreateProduct = () => {
             </Card>
           </Col>
 
-          {/* VARIANTS */}
           <Col xs={24}>
             <Card
               title="Variants"
@@ -529,7 +491,6 @@ const CreateProduct = () => {
                       <Text style={{ marginLeft: 8 }}>Default Variant</Text>
                     </Col>
 
-                    {/* ATTRIBUTES */}
                     <Col xs={24}>
                       <Card
                         size="small"
@@ -551,26 +512,66 @@ const CreateProduct = () => {
                             style={{ marginBottom: 10 }}
                           >
                             <Col xs={10}>
-                              <Input
+                              <Select
+                                showSearch
+                                allowClear
                                 placeholder="Attribute Key"
                                 value={attr.key}
-                                onChange={(e) => {
+                                style={{ width: "100%" }}
+                                filterOption={(input, option) =>
+                                  (option?.value ?? "")
+                                    .toLowerCase()
+                                    .includes(input.toLowerCase())
+                                }
+                                options={ATTRIBUTE_KEYS.map((k) => ({
+                                  value: k,
+                                  label: k,
+                                }))}
+                                onChange={(value) => {
                                   const arr = [...variants];
-                                  arr[index].attributes[aIndex].key =
-                                    e.target.value;
+                                  arr[index].attributes[aIndex].key = value;
                                   setVariants(arr);
+                                }}
+                                onBlur={(e) => {
+                                  // Allow custom input on blur
+                                  const arr = [...variants];
+                                  const inputValue = (e.target as HTMLInputElement).value;
+                                  if (!arr[index].attributes[aIndex].key && inputValue) {
+                                    arr[index].attributes[aIndex].key = inputValue;
+                                    setVariants(arr);
+                                  }
                                 }}
                               />
                             </Col>
                             <Col xs={10}>
-                              <Input
+                              <Select
+                                showSearch
+                                allowClear
                                 placeholder="Attribute Value"
                                 value={attr.value}
-                                onChange={(e) => {
+                                style={{ width: "100%" }}
+                                filterOption={(input, option) =>
+                                  (option?.value ?? "")
+                                    .toLowerCase()
+                                    .includes(input.toLowerCase())
+                                }
+                                options={ATTRIBUTE_VALUES.map((v) => ({
+                                  value: v,
+                                  label: v,
+                                }))}
+                                onChange={(value) => {
                                   const arr = [...variants];
-                                  arr[index].attributes[aIndex].value =
-                                    e.target.value;
+                                  arr[index].attributes[aIndex].value = value;
                                   setVariants(arr);
+                                }}
+                                onBlur={(e) => {
+                                  // Allow custom input on blur
+                                  const arr = [...variants];
+                                  const inputValue = (e.target as HTMLInputElement).value;
+                                  if (!arr[index].attributes[aIndex].value && inputValue) {
+                                    arr[index].attributes[aIndex].value = inputValue;
+                                    setVariants(arr);
+                                  }
                                 }}
                               />
                             </Col>
@@ -579,6 +580,7 @@ const CreateProduct = () => {
                                 danger
                                 icon={<DeleteOutlined />}
                                 onClick={() => removeAttribute(index, aIndex)}
+                                disabled={variant.attributes.length === 1}
                               />
                             </Col>
                           </Row>
@@ -593,7 +595,6 @@ const CreateProduct = () => {
         </Row>
       </Form>
 
-      {/* IMAGE ADD MODAL */}
       <Modal
         title="Add Image"
         open={isImageModalOpen}

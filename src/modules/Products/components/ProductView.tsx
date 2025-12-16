@@ -85,7 +85,32 @@ const ProductView = () => {
 
               {/* Brand Info */}
               <Title level={5}>Brand / Company</Title>
-              <Text>{product?.brand_or_company || "No brand available"}</Text>
+              {product?.brand_or_company ? (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginBottom: 16,
+                  }}
+                >
+                  {product.brand_or_company.image && (
+                    <img
+                      src={product.brand_or_company.image}
+                      alt={product.brand_or_company.name}
+                      style={{
+                        width: 32,
+                        height: 32,
+                        objectFit: "contain",
+                        borderRadius: 4,
+                      }}
+                    />
+                  )}
+                  <Text>{product.brand_or_company.name}</Text>
+                </div>
+              ) : (
+                <Text>No brand available</Text>
+              )}
 
               <Divider />
 
@@ -134,6 +159,18 @@ const ProductView = () => {
               dataIndex: "is_default",
               render: (v) =>
                 v ? <Tag color="green">Default</Tag> : <Tag>No</Tag>,
+            },
+            {
+              title: "Attributes",
+              dataIndex: "attributes",
+              render: (attrs) =>
+                attrs && typeof attrs === "object"
+                  ? Object.entries(attrs).map(([k, v]: [string, any]) => (
+                      <div key={k}>
+                        <b>{k}:</b> {v}
+                      </div>
+                    ))
+                  : attrs,
             },
           ]}
         />
