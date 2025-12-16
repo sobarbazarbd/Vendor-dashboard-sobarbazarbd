@@ -42,11 +42,11 @@ const EditProduct = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 500);
   const [description, setDescription] = useState("");
+  const [shortDescription, setShortDescription] = useState("");
 
   const { data: productData, isLoading: isLoadingProduct } =
     useGetSingleProductQuery(Number(productId));
   const [update, { isLoading, isSuccess }] = useUpdateProductMutation();
-
 
   const { data: subCategoriesData } = useGetSubCategoriesQuery({
     search: debouncedSearch || undefined,
@@ -74,9 +74,11 @@ const EditProduct = () => {
         brand_or_company: product.brand_or_company?.id,
         subcategories: product.subcategories?.map((s: any) => s.id),
         description: product.description,
+        short_description: product.short_description, // set initial value
       });
 
       setDescription(product.description || "");
+      setShortDescription(product.short_description || "");
       setExistingImages(product.images || []);
 
       // Load variants with attributes
@@ -193,6 +195,11 @@ const EditProduct = () => {
       return;
     }
 
+    if (!shortDescription || shortDescription.trim() === "") {
+      message.error("Please add a short description!");
+      return;
+    }
+
     if (variants.length === 0) {
       message.error("Please add at least one variant!");
       return;
@@ -230,6 +237,7 @@ const EditProduct = () => {
     const formData = new FormData();
 
     formData.append("name", values.name);
+    formData.append("short_description", shortDescription);
     formData.append("description", description);
     formData.append("sku", values.sku || "");
     formData.append("is_active", values.is_active ? "true" : "false");
@@ -349,6 +357,24 @@ const EditProduct = () => {
                 <Col xs={24} md={12}>
                   <Form.Item label="SKU" name="sku">
                     <Input size="large" placeholder="SKU" />
+                  </Form.Item>
+                </Col>
+
+                <Col xs={24} md={24}>
+                  <Form.Item
+                    label="Short Description"
+                    name="short_description"
+                    help={!shortDescription ? "Short description is required" : ""}
+                    validateStatus={!shortDescription ? "error" : ""}
+                  >
+                    <Input.TextArea
+                      rows={3}
+                      maxLength={250}
+                      showCount
+                      placeholder="Short Description (max 250 chars)"
+                      value={shortDescription}
+                      onChange={(e) => setShortDescription(e.target.value)}
+                    />
                   </Form.Item>
                 </Col>
 
