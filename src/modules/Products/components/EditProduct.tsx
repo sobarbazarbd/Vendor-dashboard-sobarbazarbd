@@ -96,6 +96,9 @@ const EditProduct = () => {
                 value,
               }))
             : [{ key: "", value: "" }],
+          existingImage: v.image || null,
+          image: null,
+          imagePreview: null,
         }));
         setVariants(loadedVariants);
       } else {
@@ -107,6 +110,9 @@ const EditProduct = () => {
             stock: "",
             is_default: false,
             attributes: [{ key: "", value: "" }],
+            existingImage: null,
+            image: null,
+            imagePreview: null,
           },
         ]);
       }
@@ -159,6 +165,9 @@ const EditProduct = () => {
         stock: "",
         is_default: false,
         attributes: [{ key: "", value: "" }],
+        existingImage: null,
+        image: null,
+        imagePreview: null,
       },
     ]);
   };
@@ -182,6 +191,26 @@ const EditProduct = () => {
       return message.warning("At least one attribute required per variant!");
     }
     arr[variantIndex].attributes.splice(attrIndex, 1);
+    setVariants(arr);
+  };
+
+  const handleVariantImageChange = (variantIndex: number, file: File | null) => {
+    const arr = [...variants];
+    if (file) {
+      arr[variantIndex].image = file;
+      arr[variantIndex].imagePreview = URL.createObjectURL(file);
+      arr[variantIndex].existingImage = null; // Clear existing image when new one is uploaded
+    } else {
+      arr[variantIndex].image = null;
+      arr[variantIndex].imagePreview = null;
+    }
+    setVariants(arr);
+  };
+
+  const removeExistingVariantImage = (variantIndex: number) => {
+    const arr = [...variants];
+    arr[variantIndex].existingImage = null;
+    arr[variantIndex].removeExistingImage = true;
     setVariants(arr);
   };
 
@@ -260,6 +289,7 @@ const EditProduct = () => {
       (v: any) => v.name && v.sku && Number(v.price) > 0
     );
 
+    let variantImageIndex = 0;
     const variantsPayload = validVariants.map((v: any) => {
       const variantData: any = {
         name: v.name.trim(),
@@ -272,6 +302,9 @@ const EditProduct = () => {
             .filter((a: any) => a.key && a.value)
             .map((a: any) => [a.key.trim(), a.value.trim()])
         ),
+        remove_image: v.removeExistingImage || false,
+        has_new_image: !!v.image,
+        image_index: v.image ? variantImageIndex++ : null,
       };
 
       // Include ID for existing variants
@@ -283,6 +316,13 @@ const EditProduct = () => {
     });
 
     formData.append("variants", JSON.stringify(variantsPayload));
+
+    // Append variant image files
+    validVariants.forEach((v: any) => {
+      if (v.image) {
+        formData.append("variant_image_files", v.image);
+      }
+    });
 
     // Existing images metadata
     const existingImagesMetadata = existingImages.map((img: any) => ({
@@ -655,6 +695,60 @@ const EditProduct = () => {
                         }}
                       />
                       <Text style={{ marginLeft: 8 }}>Default Variant</Text>
+                    </Col>
+
+                    <Col xs={24} md={24}>
+                      <Card size="small" title="Variant Image (Optional)">
+                        <Row gutter={16} align="middle">
+                          <Col>
+                            <Upload
+                              listType="picture-card"
+                              maxCount={1}
+                              showUploadList={false}
+                              beforeUpload={(file) => {
+                                handleVariantImageChange(index, file);
+                                return false;
+                              }}
+                            >
+                              {variant.imagePreview ? (
+                                <img
+                                  src={variant.imagePreview}
+                                  alt="variant"
+                                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                />
+                              ) : variant.existingImage ? (
+                                <img
+                                  src={variant.existingImage}
+                                  alt="variant"
+                                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                />
+                              ) : (
+                                <div>
+                                  <PlusOutlined />
+                                  <div style={{ marginTop: 8 }}>Upload</div>
+                                </div>
+                              )}
+                            </Upload>
+                          </Col>
+                          {(variant.imagePreview || variant.existingImage) && (
+                            <Col>
+                              <Button
+                                danger
+                                size="small"
+                                onClick={() => {
+                                  if (variant.imagePreview) {
+                                    handleVariantImageChange(index, null);
+                                  } else {
+                                    removeExistingVariantImage(index);
+                                  }
+                                }}
+                              >
+                                Remove Image
+                              </Button>
+                            </Col>
+                          )}
+                        </Row>
+                      </Card>
                     </Col>
 
                     <Col xs={24}>

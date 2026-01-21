@@ -34,6 +34,7 @@ import MoneyReceiptPage from "../modules/money-receipt/pages/MoneyReceiptPage";
 import StockReservationPage from "../modules/stock-reservations/pages/StockReservationPage";
 import StoreProfilePage from "../modules/store-settings/pages/StoreProfilePage";
 import EditProduct from "../modules/Products/components/EditProduct";
+import VendorDashboard from "../modules/Dashboard/page/VendorDashboard";
 
 const router = createBrowserRouter([
   {
@@ -43,7 +44,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <Dashboard />,
+        element: <VendorDashboard />,
       },
 
       // products

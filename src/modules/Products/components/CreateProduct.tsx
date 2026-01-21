@@ -91,6 +91,8 @@ const CreateProduct = () => {
       stock: "",
       is_default: false,
       attributes: [],
+      image: null,
+      imagePreview: null,
     },
   ]);
 
@@ -104,6 +106,8 @@ const CreateProduct = () => {
         stock: "",
         is_default: false,
         attributes: [],
+        image: null,
+        imagePreview: null,
       },
     ]);
   };
@@ -124,6 +128,18 @@ const CreateProduct = () => {
   const removeAttribute = (variantIndex: number, attrIndex: number) => {
     const arr = [...variants];
     arr[variantIndex].attributes.splice(attrIndex, 1);
+    setVariants(arr);
+  };
+
+  const handleVariantImageChange = (variantIndex: number, file: File | null) => {
+    const arr = [...variants];
+    if (file) {
+      arr[variantIndex].image = file;
+      arr[variantIndex].imagePreview = URL.createObjectURL(file);
+    } else {
+      arr[variantIndex].image = null;
+      arr[variantIndex].imagePreview = null;
+    }
     setVariants(arr);
   };
 
@@ -201,7 +217,7 @@ const CreateProduct = () => {
       (v: any) => v.name && v.sku && Number(v.price) > 0
     );
 
-    const variantsPayload = validVariants.map((v: any) => ({
+    const variantsPayload = validVariants.map((v: any, idx: number) => ({
       name: v.name.trim(),
       sku: v.sku.trim(),
       price: Number(v.price),
@@ -212,9 +228,18 @@ const CreateProduct = () => {
           .filter((a: any) => a.key && a.value)
           .map((a: any) => [a.key.trim(), a.value.trim()])
       ),
+      has_image: !!v.image,
+      image_index: v.image ? idx : null,
     }));
 
     formData.append("variants", JSON.stringify(variantsPayload));
+
+    // Append variant image files
+    validVariants.forEach((v: any) => {
+      if (v.image) {
+        formData.append("variant_image_files", v.image);
+      }
+    });
 
     const imagesMetadata = images.map((img: any, index: number) => ({
       alt_text: img.alt_text || "",
@@ -528,6 +553,48 @@ const CreateProduct = () => {
                         }}
                       />
                       <Text style={{ marginLeft: 8 }}>Default Variant</Text>
+                    </Col>
+
+                    <Col xs={24} md={24}>
+                      <Card size="small" title="Variant Image (Optional)">
+                        <Row gutter={16} align="middle">
+                          <Col>
+                            <Upload
+                              listType="picture-card"
+                              maxCount={1}
+                              showUploadList={false}
+                              beforeUpload={(file) => {
+                                handleVariantImageChange(index, file);
+                                return false;
+                              }}
+                            >
+                              {variant.imagePreview ? (
+                                <img
+                                  src={variant.imagePreview}
+                                  alt="variant"
+                                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                />
+                              ) : (
+                                <div>
+                                  <PlusOutlined />
+                                  <div style={{ marginTop: 8 }}>Upload</div>
+                                </div>
+                              )}
+                            </Upload>
+                          </Col>
+                          {variant.imagePreview && (
+                            <Col>
+                              <Button
+                                danger
+                                size="small"
+                                onClick={() => handleVariantImageChange(index, null)}
+                              >
+                                Remove Image
+                              </Button>
+                            </Col>
+                          )}
+                        </Row>
+                      </Card>
                     </Col>
 
                     <Col xs={24}>
