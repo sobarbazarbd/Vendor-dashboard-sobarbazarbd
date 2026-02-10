@@ -1,4 +1,4 @@
-import { Image } from "antd";
+import { Image, Typography } from "antd";
 
 import { mainLogo } from "../../../utilities/images";
 import React from "react";
@@ -6,6 +6,8 @@ import { useGetDashboardDataQuery } from "../../../modules/Dashboard/api/dashobo
 
 const SidebarTop: React.FC = () => {
   const { data: dashboardData } = useGetDashboardDataQuery({});
+  const institutionName =
+    dashboardData?.data?.institution?.name || "Sobar Bazar Vendor";
 
   // const [time, setTime] = useState(moment().format("LTS"));
 
@@ -19,7 +21,7 @@ const SidebarTop: React.FC = () => {
 
   return (
     <React.Fragment>
-      <div className="sidebar-top-style flex items-center justify-center overflow-hidden">
+      <div className="sidebar-top-style overflow-hidden">
         {/* <h1 style={{ fontSize: "24px", fontFamily: "Arial" }}>{time .}</h1> */}
 
         <Image
@@ -27,10 +29,17 @@ const SidebarTop: React.FC = () => {
           preview={false}
           width={50}
           height={50}
-          className="mx-auto object-fit-contain"
+          className="sidebar-brand-logo object-fit-contain"
         />
+        <div>
+          <Typography.Text className="sidebar-brand-name">
+            {institutionName}
+          </Typography.Text>
+          <Typography.Text className="sidebar-brand-subtitle">
+            Vendor Dashboard
+          </Typography.Text>
+        </div>
       </div>
-      <hr />
     </React.Fragment>
   );
 };

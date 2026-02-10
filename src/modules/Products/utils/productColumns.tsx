@@ -145,7 +145,7 @@ const useProductColumns = (): ColumnsType<any> => {
 
           <ViewButton to={`product-view/${record?.id}`} />
 
-          {deletePermission && (
+          {!deletePermission && (
             <DeleteButton onConfirm={() => handleDelete(record.id)} />
           )}
         </Space>

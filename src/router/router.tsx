@@ -2,7 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import DashboardLayout from "../layout/page/DashboardLayout";
 import ErrorPage from "../common/ErrorPage/ErrorPage";
 import Login from "../modules/Auth/page/Login";
-import Dashboard from "../modules/Dashboard/page/Dashboard";
+// import Dashboard from "../modules/Dashboard/page/Dashboard";
 import Profile from "../modules/Profile/page/Profile";
 import Accounts from "../modules/Accounts/pages/Accounts";
 import BalanceStatus from "../modules/Accounts/components/BalanceStatus/BalanceStatus";

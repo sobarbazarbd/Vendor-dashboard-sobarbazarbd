@@ -2,7 +2,7 @@ import { Layout } from "antd";
 import React, { useState } from "react";
 import "../styles/DashboardLayout.css";
 import DashboardSidebar from "../components/DashboardSidebar/DashboardSidebar";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import DashboardHeader from "../components/DashboardHeader/DashboardHeader";
 import SidebarDrawer from "../components/DashboardSidebar/SidebarDrawer";
 
@@ -10,6 +10,7 @@ const { Content } = Layout;
 
 const DashboardLayout: React.FC = () => {
   const [open, setOpen] = useState<boolean>(false);
+  const location = useLocation();
 
   return (
     <React.Fragment>
@@ -18,9 +19,11 @@ const DashboardLayout: React.FC = () => {
 
         <Layout id="contain-layout">
           <DashboardHeader setOpen={setOpen} />
-          <Content>
-            <div className="dashboard-content" style={{ padding: "10px 20px" }}>
-              <Outlet />
+          <Content className="dashboard-content-wrapper">
+            <div className="dashboard-content">
+              <div key={location.pathname} className="dashboard-route-view">
+                <Outlet />
+              </div>
             </div>
           </Content>
 

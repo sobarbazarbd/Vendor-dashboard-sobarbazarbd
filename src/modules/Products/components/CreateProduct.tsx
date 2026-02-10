@@ -8,13 +8,23 @@ import {
   Switch,
   Form as AntForm,
   Typography,
-  Divider,
   Button,
   Upload,
   message,
   Select,
+  Popconfirm,
+  Progress,
+  Tag,
 } from "antd";
-import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+  PlusOutlined,
+  DeleteOutlined,
+  ArrowLeftOutlined,
+  CheckCircleOutlined,
+  ExclamationCircleOutlined,
+  PictureOutlined,
+  ApartmentOutlined,
+} from "@ant-design/icons";
 import { Form } from "../../../common/CommonAnt";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -29,8 +39,13 @@ import {
 import { CommonSelect } from "../../../common/commonField/commonFeild";
 import useDebounce from "../../../hooks/useDebounce";
 import { ATTRIBUTE_KEYS, ATTRIBUTE_VALUES } from "../attributeOptions";
+import BreadCrumb from "../../../common/BreadCrumb/BreadCrumb";
 
 const { Title, Text } = Typography;
+const pageCardClass =
+  "rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] shadow-sm";
+const heroCardClass =
+  "rounded-2xl border border-[#cdeedb] bg-gradient-to-br from-white to-[#eefff7] shadow-sm";
 
 const CreateProduct = () => {
   const [form] = AntForm.useForm();
@@ -90,7 +105,7 @@ const CreateProduct = () => {
       price: "",
       stock: "",
       is_default: false,
-      attributes: [],
+      attributes: [{ key: "", value: "" }],
       image: null,
       imagePreview: null,
     },
@@ -105,7 +120,7 @@ const CreateProduct = () => {
         price: "",
         stock: "",
         is_default: false,
-        attributes: [],
+        attributes: [{ key: "", value: "" }],
         image: null,
         imagePreview: null,
       },
@@ -255,15 +270,6 @@ const CreateProduct = () => {
       }
     });
 
-    console.log("=== FormData Contents ===");
-    console.log("Variants:", variantsPayload);
-    console.log("Images Metadata:", imagesMetadata);
-    console.log("Image Files Count:", images.length);
-
-    for (const pair of formData.entries()) {
-      console.log(pair[0], pair[1]);
-    }
-
     create(formData);
   };
 
@@ -274,29 +280,172 @@ const CreateProduct = () => {
     }
   }, [isSuccess, navigate]);
 
-  return (
-    <div className="create-product-form">
-      <Title level={3}>Create New Product</Title>
-      <Divider />
+  useEffect(() => {
+    form.setFieldsValue({ is_active: true });
+  }, [form]);
 
-      <Form form={form} onFinish={onFinish} isLoading={isLoading}>
-        <Row gutter={[24, 24]}>
+  const validVariantCount = variants.filter(
+    (v: any) => v.name && v.sku && Number(v.price) > 0
+  ).length;
+
+  const validAttributeVariantCount = variants.filter(
+    (v: any) =>
+      Array.isArray(v.attributes) &&
+      v.attributes.length > 0 &&
+      v.attributes.every((a: any) => a.key && a.value)
+  ).length;
+
+  const descriptionReady = Boolean(
+    shortDescription.trim() &&
+      description &&
+      description !== "<p></p>" &&
+      description.trim() !== ""
+  );
+
+  const flowChecks = [
+    { key: "description", label: "Details", done: descriptionReady },
+    { key: "images", label: "Images", done: images.length > 0 },
+    {
+      key: "variants",
+      label: "Variants",
+      done: validVariantCount > 0,
+    },
+    {
+      key: "attributes",
+      label: "Attributes",
+      done: validAttributeVariantCount === variants.length && variants.length > 0,
+    },
+  ];
+
+  const completionPercent = Math.round(
+    (flowChecks.filter((item) => item.done).length / flowChecks.length) * 100
+  );
+
+  return (
+    <div className="space-y-4 pb-3">
+      <BreadCrumb />
+
+      <Card className={heroCardClass}>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <Title level={3} className="!mb-1 !text-[var(--app-text)]">
+              Create New Product
+            </Title>
+            <Text className="text-sm text-[var(--app-text-soft)]">
+              Add product details, upload images, and configure variants in one
+              smooth flow.
+            </Text>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Tag className="!rounded-full !border-0 !bg-[#e8f7ef] !text-[#1f6f45]">
+                <PictureOutlined /> {images.length} Images
+              </Tag>
+              <Tag className="!rounded-full !border-0 !bg-[#e8f7ef] !text-[#1f6f45]">
+                <ApartmentOutlined /> {variants.length} Variants
+              </Tag>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <Button
+              icon={<ArrowLeftOutlined />}
+              className="!rounded-xl"
+              onClick={() => navigate("/products")}
+            >
+              Back to Products
+            </Button>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              className="!rounded-xl !bg-[#279e5a] !border-[#279e5a] hover:!bg-[#1f8a4e] hover:!border-[#1f8a4e]"
+              onClick={openAddImageModal}
+            >
+              Quick Add Image
+            </Button>
+          </div>
+        </div>
+      </Card>
+
+      <Card className={pageCardClass}>
+        <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <Text className="text-sm font-semibold text-[var(--app-text)]">
+            Product Creation Flow
+          </Text>
+          <Text className="text-xs text-[var(--app-text-soft)]">
+            Completion: {completionPercent}%
+          </Text>
+        </div>
+
+        <div className="mb-3 grid grid-cols-2 gap-2 md:grid-cols-4">
+          {flowChecks.map((item) => (
+            <div
+              key={item.key}
+              className={`rounded-xl border px-3 py-2 text-sm ${
+                item.done
+                  ? "border-[#b7e2c8] bg-[#edf9f1] text-[#1f6f45]"
+                  : "border-[var(--app-border)] bg-[var(--app-surface-soft)] text-[var(--app-text-soft)]"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                {item.done ? (
+                  <CheckCircleOutlined />
+                ) : (
+                  <ExclamationCircleOutlined />
+                )}
+                <span>{item.label}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <Progress
+          percent={completionPercent}
+          showInfo={false}
+          strokeColor="#279e5a"
+          trailColor="rgba(39, 158, 90, 0.12)"
+        />
+      </Card>
+
+      <Form
+        form={form}
+        onFinish={onFinish}
+        isLoading={isLoading}
+        buttonLabel="Create Product"
+      >
+        <Row gutter={[16, 16]}>
           <Col xs={24}>
-            <Card title="Basic Product Information">
-              <Row gutter={[16, 16]}>
+            <Card
+              className={pageCardClass}
+              title={
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-semibold">Basic Product Information</span>
+                  <Text className="text-xs text-[var(--app-text-soft)]">
+                    Required fields
+                  </Text>
+                </div>
+              }
+            >
+              <Row gutter={[16, 8]}>
                 <Col xs={24} md={12}>
                   <Form.Item
                     label="Product Name"
                     name="name"
                     rules={[{ required: true }]}
                   >
-                    <Input size="large" placeholder="Product Name" />
+                    <Input
+                      size="large"
+                      placeholder="Product Name"
+                      className="!rounded-xl"
+                    />
                   </Form.Item>
                 </Col>
 
                 <Col xs={24} md={12}>
                   <Form.Item label="SKU" name="sku">
-                    <Input size="large" placeholder="SKU" />
+                    <Input
+                      size="large"
+                      placeholder="SKU"
+                      className="!rounded-xl"
+                    />
                   </Form.Item>
                 </Col>
 
@@ -312,6 +461,7 @@ const CreateProduct = () => {
                       maxLength={250}
                       showCount
                       placeholder="Short Description (max 250 chars)"
+                      className="!rounded-xl"
                       value={shortDescription}
                       onChange={e => setShortDescription(e.target.value)}
                     />
@@ -329,7 +479,7 @@ const CreateProduct = () => {
                       apiKey="233kxbtr26hptvnz70r051p006eabjgrqpjnj7psbw11yti9"
                       value={description}
                       init={{
-                        height: 300,
+                        height: 320,
                         menubar: false,
                         plugins: [
                           "advlist",
@@ -397,11 +547,17 @@ const CreateProduct = () => {
                     label="Status"
                     name="is_active"
                     valuePropName="checked"
+                    className="mb-0"
                   >
-                    <Switch
-                      checkedChildren="Active"
-                      unCheckedChildren="Inactive"
-                    />
+                    <div className="flex items-center gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-soft)] px-3 py-2">
+                      <Switch
+                        checkedChildren="Active"
+                        unCheckedChildren="Inactive"
+                      />
+                      <Text className="text-sm text-[var(--app-text-soft)]">
+                        Keep this product active for listing
+                      </Text>
+                    </div>
                   </Form.Item>
                 </Col>
               </Row>
@@ -410,11 +566,13 @@ const CreateProduct = () => {
 
           <Col xs={24}>
             <Card
+              className={pageCardClass}
               title="Images"
               extra={
                 <Button
                   type="primary"
                   icon={<PlusOutlined />}
+                  className="!rounded-xl !bg-[#279e5a] !border-[#279e5a] hover:!bg-[#1f8a4e] hover:!border-[#1f8a4e]"
                   onClick={openAddImageModal}
                 >
                   Add Image
@@ -422,7 +580,7 @@ const CreateProduct = () => {
               }
             >
               {images.length === 0 && (
-                <Text type="secondary">
+                <Text type="secondary" className="rounded-xl border border-dashed border-[var(--app-border)] bg-[var(--app-surface-soft)] px-4 py-2 inline-block">
                   No images added yet. Please add at least one image.
                 </Text>
               )}
@@ -431,12 +589,13 @@ const CreateProduct = () => {
                 {images.map((img, index) => (
                   <Col key={index} xs={24} md={6}>
                     <Card
+                      className="!rounded-xl !border !border-[var(--app-border)] overflow-hidden"
                       hoverable
                       cover={
                         <img
                           alt={img.alt_text}
                           src={URL.createObjectURL(img.image)}
-                          style={{ height: 200, objectFit: "cover" }}
+                          className="h-48 w-full object-cover"
                         />
                       }
                     >
@@ -449,14 +608,26 @@ const CreateProduct = () => {
                       <p>
                         <b>Feature:</b> {img.is_feature ? "Yes" : "No"}
                       </p>
-                      <Button
-                        danger
-                        size="small"
-                        block
-                        onClick={() => removeImage(index)}
+                      <Popconfirm
+                        title="Remove this image?"
+                        description="This image will be removed from the product."
+                        okText="Remove"
+                        cancelText="Cancel"
+                        okButtonProps={{
+                          className:
+                            "!bg-[#279e5a] !border-[#279e5a] hover:!bg-[#1f8a4e] hover:!border-[#1f8a4e]",
+                        }}
+                        onConfirm={() => removeImage(index)}
                       >
-                        Remove
-                      </Button>
+                        <Button
+                          danger
+                          size="small"
+                          block
+                          className="!rounded-lg"
+                        >
+                          Remove
+                        </Button>
+                      </Popconfirm>
                     </Card>
                   </Col>
                 ))}
@@ -466,36 +637,54 @@ const CreateProduct = () => {
 
           <Col xs={24}>
             <Card
+              className={pageCardClass}
               title="Variants"
               extra={
                 <Button
                   type="primary"
                   icon={<PlusOutlined />}
+                  className="!rounded-xl !bg-[#279e5a] !border-[#279e5a] hover:!bg-[#1f8a4e] hover:!border-[#1f8a4e]"
                   onClick={addVariant}
                 >
                   Add Variant
                 </Button>
               }
             >
-              {variants.map((variant, index) => (
-                <Card
-                  key={index}
-                  title={`Variant ${index + 1}`}
-                  extra={
-                    <Button
-                      danger
-                      icon={<DeleteOutlined />}
-                      onClick={() => removeVariant(index)}
-                    >
-                      Remove
-                    </Button>
-                  }
-                  style={{ marginBottom: 16 }}
-                >
-                  <Row gutter={[16, 16]}>
+              <div className="space-y-4">
+                {variants.map((variant, index) => (
+                  <Card
+                    key={index}
+                    title={`Variant ${index + 1}`}
+                    className="!rounded-xl !border !border-[var(--app-border)] !bg-[var(--app-surface-soft)]"
+                    extra={
+                      <Popconfirm
+                        title="Remove this variant?"
+                        description="All fields inside this variant will be deleted."
+                        okText="Remove"
+                        cancelText="Cancel"
+                        okButtonProps={{
+                          className:
+                            "!bg-[#279e5a] !border-[#279e5a] hover:!bg-[#1f8a4e] hover:!border-[#1f8a4e]",
+                        }}
+                        onConfirm={() => removeVariant(index)}
+                        disabled={variants.length === 1}
+                      >
+                        <Button
+                          danger
+                          icon={<DeleteOutlined />}
+                          className="!rounded-lg"
+                          disabled={variants.length === 1}
+                        >
+                          Remove
+                        </Button>
+                      </Popconfirm>
+                    }
+                  >
+                    <Row gutter={[12, 12]}>
                     <Col xs={24} md={12}>
                       <Input
                         placeholder="Variant Name"
+                        className="!rounded-xl"
                         value={variant.name}
                         onChange={(e) => {
                           const arr = [...variants];
@@ -508,6 +697,7 @@ const CreateProduct = () => {
                     <Col xs={24} md={12}>
                       <Input
                         placeholder="SKU"
+                        className="!rounded-xl"
                         value={variant.sku}
                         onChange={(e) => {
                           const arr = [...variants];
@@ -521,6 +711,8 @@ const CreateProduct = () => {
                       <Input
                         placeholder="Price"
                         type="number"
+                        addonBefore="Tk"
+                        className="!rounded-xl"
                         value={variant.price}
                         onChange={(e) => {
                           const arr = [...variants];
@@ -534,6 +726,7 @@ const CreateProduct = () => {
                       <Input
                         placeholder="Stock"
                         type="number"
+                        className="!rounded-xl"
                         value={variant.stock}
                         onChange={(e) => {
                           const arr = [...variants];
@@ -544,19 +737,27 @@ const CreateProduct = () => {
                     </Col>
 
                     <Col xs={24} md={6}>
-                      <Switch
-                        checked={variant.is_default}
-                        onChange={(v) => {
-                          const arr = [...variants];
-                          arr[index].is_default = v;
-                          setVariants(arr);
-                        }}
-                      />
-                      <Text style={{ marginLeft: 8 }}>Default Variant</Text>
+                      <div className="flex items-center gap-2 rounded-xl border border-[var(--app-border)] bg-white px-3 py-2">
+                        <Switch
+                          checked={variant.is_default}
+                          onChange={(v) => {
+                            const arr = [...variants];
+                            arr[index].is_default = v;
+                            setVariants(arr);
+                          }}
+                        />
+                        <Text className="text-sm text-[var(--app-text-soft)]">
+                          Default Variant
+                        </Text>
+                      </div>
                     </Col>
 
                     <Col xs={24} md={24}>
-                      <Card size="small" title="Variant Image (Optional)">
+                      <Card
+                        size="small"
+                        className="!rounded-xl !border !border-[var(--app-border)]"
+                        title="Variant Image (Optional)"
+                      >
                         <Row gutter={16} align="middle">
                           <Col>
                             <Upload
@@ -572,25 +773,38 @@ const CreateProduct = () => {
                                 <img
                                   src={variant.imagePreview}
                                   alt="variant"
-                                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                  className="h-full w-full object-cover"
                                 />
                               ) : (
                                 <div>
                                   <PlusOutlined />
-                                  <div style={{ marginTop: 8 }}>Upload</div>
+                                  <div className="mt-2">Upload</div>
                                 </div>
                               )}
                             </Upload>
                           </Col>
                           {variant.imagePreview && (
                             <Col>
-                              <Button
-                                danger
-                                size="small"
-                                onClick={() => handleVariantImageChange(index, null)}
+                              <Popconfirm
+                                title="Remove variant image?"
+                                okText="Remove"
+                                cancelText="Cancel"
+                                okButtonProps={{
+                                  className:
+                                    "!bg-[#279e5a] !border-[#279e5a] hover:!bg-[#1f8a4e] hover:!border-[#1f8a4e]",
+                                }}
+                                onConfirm={() =>
+                                  handleVariantImageChange(index, null)
+                                }
                               >
-                                Remove Image
-                              </Button>
+                                <Button
+                                  danger
+                                  size="small"
+                                  className="!rounded-lg"
+                                >
+                                  Remove Image
+                                </Button>
+                              </Popconfirm>
                             </Col>
                           )}
                         </Row>
@@ -600,11 +814,13 @@ const CreateProduct = () => {
                     <Col xs={24}>
                       <Card
                         size="small"
+                        className="!rounded-xl !border !border-[var(--app-border)]"
                         title="Attributes"
                         extra={
                           <Button
                             size="small"
                             icon={<PlusOutlined />}
+                            className="!rounded-lg"
                             onClick={() => addAttribute(index)}
                           >
                             Add Attribute
@@ -617,13 +833,13 @@ const CreateProduct = () => {
                             key={aIndex}
                             style={{ marginBottom: 10 }}
                           >
-                            <Col xs={10}>
+                            <Col xs={24} sm={10}>
                               <Select
                                 showSearch
                                 allowClear
                                 placeholder="Attribute Key"
                                 value={attr.key}
-                                style={{ width: "100%" }}
+                                className="w-full"
                                 filterOption={(input, option) =>
                                   (option?.value ?? "")
                                     .toLowerCase()
@@ -655,13 +871,13 @@ const CreateProduct = () => {
                                 }}
                               />
                             </Col>
-                            <Col xs={10}>
+                            <Col xs={24} sm={10}>
                               <Select
                                 showSearch
                                 allowClear
                                 placeholder="Attribute Value"
                                 value={attr.value}
-                                style={{ width: "100%" }}
+                                className="w-full"
                                 filterOption={(input, option) =>
                                   (option?.value ?? "")
                                     .toLowerCase()
@@ -693,32 +909,67 @@ const CreateProduct = () => {
                                 }}
                               />
                             </Col>
-                            <Col xs={4}>
-                              <Button
-                                danger
-                                icon={<DeleteOutlined />}
-                                onClick={() => removeAttribute(index, aIndex)}
+                            <Col xs={24} sm={4}>
+                              <Popconfirm
+                                title="Remove this attribute?"
+                                okText="Remove"
+                                cancelText="Cancel"
+                                okButtonProps={{
+                                  className:
+                                    "!bg-[#279e5a] !border-[#279e5a] hover:!bg-[#1f8a4e] hover:!border-[#1f8a4e]",
+                                }}
+                                onConfirm={() => removeAttribute(index, aIndex)}
                                 disabled={variant.attributes.length === 1}
-                              />
+                              >
+                                <Button
+                                  danger
+                                  block
+                                  icon={<DeleteOutlined />}
+                                  className="!rounded-lg"
+                                  disabled={variant.attributes.length === 1}
+                                />
+                              </Popconfirm>
                             </Col>
                           </Row>
                         ))}
                       </Card>
                     </Col>
                   </Row>
-                </Card>
-              ))}
+                  </Card>
+                ))}
+              </div>
             </Card>
           </Col>
         </Row>
       </Form>
 
       <Modal
-        title="Add Image"
+        title={
+          <div className="space-y-1">
+            <div className="text-base font-semibold text-[var(--app-text)]">
+              Add Product Image
+            </div>
+            <div className="text-xs text-[var(--app-text-soft)]">
+              Upload image, alt text, and ordering information.
+            </div>
+          </div>
+        }
         open={isImageModalOpen}
         onCancel={() => setIsImageModalOpen(false)}
         onOk={handleAddImage}
         okText="Add"
+        cancelText="Cancel"
+        centered
+        destroyOnClose
+        maskClosable={false}
+        width={560}
+        okButtonProps={{
+          className:
+            "!bg-[#279e5a] !border-[#279e5a] hover:!bg-[#1f8a4e] hover:!border-[#1f8a4e]",
+        }}
+        cancelButtonProps={{
+          className: "!rounded-lg",
+        }}
       >
         <AntForm form={imageForm} layout="vertical">
           <AntForm.Item
@@ -733,7 +984,7 @@ const CreateProduct = () => {
             >
               <div>
                 <PlusOutlined />
-                <div style={{ marginTop: 8 }}>Upload</div>
+                <div className="mt-2">Upload</div>
               </div>
             </Upload>
           </AntForm.Item>
@@ -743,11 +994,15 @@ const CreateProduct = () => {
             name="alt_text"
             rules={[{ required: true, message: "Alt text required" }]}
           >
-            <Input placeholder="Alt Text" />
+            <Input placeholder="Alt Text" className="!rounded-xl" />
           </AntForm.Item>
 
           <AntForm.Item label="Order" name="order">
-            <Input type="number" placeholder="Order number" />
+            <Input
+              type="number"
+              placeholder="Order number"
+              className="!rounded-xl"
+            />
           </AntForm.Item>
 
           <AntForm.Item

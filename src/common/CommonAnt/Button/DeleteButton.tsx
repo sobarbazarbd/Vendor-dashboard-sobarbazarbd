@@ -10,20 +10,24 @@ interface Props extends ButtonProps {
 const DeleteButton: React.FC<Props> = ({ onConfirm, onCancel, ...rest }) => {
   return (
     <Popconfirm
-      title="Delete the task"
-      description="Are you sure you want to delete this task?"
+      title="Delete item"
+      description="Are you sure you want to delete this item?"
       onConfirm={onConfirm}
       onCancel={onCancel}
-      okText="Yes"
-      cancelText="No"
+      okText="Delete"
+      cancelText="Cancel"
     >
       <AntButton
         {...rest}
         danger
+        title="Delete"
         icon={<Iconify name="weui:delete-outlined" />}
         size="small"
         type="default"
-        disabled
+        style={{
+          color: "#f5222d",
+          border: "1px solid #f5222d",
+        }}
       />
     </Popconfirm>
   );

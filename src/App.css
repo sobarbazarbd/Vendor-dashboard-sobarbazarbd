@@ -1,16 +1,9 @@
-@import url("https://fonts.googleapis.com/css2?family=Hind+Siliguri&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Oleo+Script&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Fustat:wght@200..800&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Roboto&display=swap");
-body {
-  margin: 0;
-  padding: 0;
-  font-family: "Oleo" !important;
-}
+@import url("https://fonts.googleapis.com/css2?family=Fustat:wght@300;400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap");
 .react-calendar {
   border: none !important;
   border-radius: 10px;
   padding: 20px;
-  font-family: "Oleo", sans-serif;
+  font-family: "Fustat", "Hind Siliguri", sans-serif;
   transition: background-color 0.3s, color 0.3s;
 }
 
@@ -96,8 +89,8 @@ abbr[title] {
 }
 
 .ant-menu-item-selected {
-  border-left: 4px solid rgb(0, 153, 255) !important;
-  border-radius: 0px !important;
+  border-left: none !important;
+  border-radius: 12px !important;
 }
 
 .custom-select {

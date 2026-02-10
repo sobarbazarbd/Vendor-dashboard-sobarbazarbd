@@ -62,7 +62,7 @@ const useInvoiceColumns = (): ColumnsType<any> => {
       title: "Total",
       dataIndex: "total",
       align: "center",
-      render: (amount: number) => `$${amount.toFixed(2)}`,
+      render: (amount: number) => `Tk ${amount.toFixed(2)}`,
       sorter: (a, b) => a.total - b.total,
     },
     {
@@ -70,7 +70,7 @@ const useInvoiceColumns = (): ColumnsType<any> => {
       title: "Amount Paid",
       dataIndex: "amount_paid",
       align: "center",
-      render: (amount: number) => `$${amount.toFixed(2)}`,
+      render: (amount: number) => `Tk ${amount.toFixed(2)}`,
       sorter: (a, b) => a.amount_paid - b.amount_paid,
     },
     {
@@ -78,7 +78,7 @@ const useInvoiceColumns = (): ColumnsType<any> => {
       title: "Balance",
       dataIndex: "balance",
       align: "center",
-      render: (amount: number) => `$${amount.toFixed(2)}`,
+      render: (amount: number) => `Tk ${amount.toFixed(2)}`,
       sorter: (a, b) => a.balance - b.balance,
     },
     {

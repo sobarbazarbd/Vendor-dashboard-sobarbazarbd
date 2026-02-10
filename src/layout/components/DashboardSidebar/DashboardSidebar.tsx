@@ -13,7 +13,7 @@ const DashboardSidebar: React.FC = () => {
   return (
     <Layout.Sider
       id="dashboard-sidebar"
-      width={250}
+      width={272}
       style={{
         background: themes === "light" ? color1 : darkColor,
       }}

@@ -71,7 +71,7 @@ const useOrderColumns = (): ColumnsType<any> => {
       title: "Total Amount",
       dataIndex: "total_amount",
       align: "center",
-      render: (amount: number) => `$${amount.toFixed(2)}`,
+      render: (amount: number) => `Tk ${amount.toFixed(2)}`,
       sorter: (a, b) => a.total_amount - b.total_amount,
     },
     {
@@ -86,7 +86,7 @@ const useOrderColumns = (): ColumnsType<any> => {
       title: "Subtotal",
       dataIndex: "subtotal",
       align: "center",
-      render: (amount: number) => `$${amount.toFixed(2)}`,
+      render: (amount: number) => `Tk ${amount.toFixed(2)}`,
       sorter: (a, b) => a.subtotal - b.subtotal,
     },
     {
@@ -94,7 +94,7 @@ const useOrderColumns = (): ColumnsType<any> => {
       title: "Discount",
       dataIndex: "discount",
       align: "center",
-      render: (amount: number) => `$${amount.toFixed(2)}`,
+      render: (amount: number) => `Tk ${amount.toFixed(2)}`,
       sorter: (a, b) => a.discount - b.discount,
     },
     {
@@ -102,7 +102,7 @@ const useOrderColumns = (): ColumnsType<any> => {
       title: "Net Subtotal",
       dataIndex: "net_subtotal",
       align: "center",
-      render: (amount: number) => `$${amount.toFixed(2)}`,
+      render: (amount: number) => `Tk ${amount.toFixed(2)}`,
       sorter: (a, b) => a.net_subtotal - b.net_subtotal,
     },
     {
@@ -110,7 +110,7 @@ const useOrderColumns = (): ColumnsType<any> => {
       title: "Tax",
       dataIndex: "tax",
       align: "center",
-      render: (amount: number) => `$${amount.toFixed(2)}`,
+      render: (amount: number) => `Tk ${amount.toFixed(2)}`,
       sorter: (a, b) => a.tax - b.tax,
     },
     {
@@ -118,7 +118,7 @@ const useOrderColumns = (): ColumnsType<any> => {
       title: "Shipping Cost",
       dataIndex: "shipping_cost",
       align: "center",
-      render: (amount: number) => `$${amount.toFixed(2)}`,
+      render: (amount: number) => `Tk ${amount.toFixed(2)}`,
       sorter: (a, b) => a.shipping_cost - b.shipping_cost,
     },
     {

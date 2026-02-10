@@ -22,7 +22,7 @@ const SidebarDrawer: React.FC<Props> = ({ open, setOpen }) => {
       placement="left"
       footer={null}
       closable={false}
-      width={250}
+      width={272}
       className="sidebar-drawer"
       style={{
         background: themes === "light" ? color1 : color2,

@@ -1,5 +1,17 @@
 import { useRef, useEffect } from "react";
-import { Card, Row, Col, Statistic, Table, Tag, Spin, Alert } from "antd";
+import {
+  Alert,
+  Button,
+  Card,
+  Col,
+  Row,
+  Space,
+  Spin,
+  Statistic,
+  Table,
+  Tag,
+  Typography,
+} from "antd";
 import {
   DollarOutlined,
   ShoppingCartOutlined,
@@ -7,10 +19,16 @@ import {
   RiseOutlined,
   FallOutlined,
   WalletOutlined,
+  ReloadOutlined,
+  PlusOutlined,
+  OrderedListOutlined,
+  ShopOutlined,
 } from "@ant-design/icons";
 import ApexCharts from "apexcharts";
 import { useGetVendorDashboardStatsQuery } from "../api/vendorDashboardEndpoints";
 import type { ColumnsType } from "antd/es/table";
+import { useNavigate } from "react-router-dom";
+import "./VendorDashboard.css";
 
 interface RecentOrder {
   id: number;
@@ -22,17 +40,34 @@ interface RecentOrder {
   item_count: number;
 }
 
+interface TopProduct {
+  product__name: string;
+  product__id: number;
+  total_sold: number;
+  revenue: number;
+}
+
+const formatCurrency = (amount: number): string => `Tk ${amount.toLocaleString()}`;
+
 const VendorDashboard = () => {
-  const { data: dashboardData, isLoading, isError } = useGetVendorDashboardStatsQuery();
+  const navigate = useNavigate();
+
+  const {
+    data: dashboardData,
+    isLoading,
+    isError,
+    refetch,
+    isFetching,
+  } = useGetVendorDashboardStatsQuery();
+
   const revenueChartRef = useRef<HTMLDivElement>(null);
   const ordersChartRef = useRef<HTMLDivElement>(null);
 
-  // Extract stats from response - handle both direct data and paginated response
-  const stats = dashboardData?.data && 'overview' in dashboardData.data 
-    ? dashboardData.data 
-    : undefined;
+  const stats =
+    dashboardData?.data && "overview" in dashboardData.data
+      ? dashboardData.data
+      : undefined;
 
-  // Initialize Revenue Chart
   useEffect(() => {
     if (!revenueChartRef.current || !stats?.monthly_revenue_chart) return;
 
@@ -40,17 +75,16 @@ const VendorDashboard = () => {
       series: [
         {
           name: "Revenue",
-          data: stats.monthly_revenue_chart.map((item: { revenue: number; month: string }) => item.revenue),
+          data: stats.monthly_revenue_chart.map(
+            (item: { revenue: number; month: string }) => item.revenue
+          ),
         },
       ],
       chart: {
-        height: 350,
+        height: 320,
         type: "area",
         toolbar: {
-          show: true,
-        },
-        zoom: {
-          enabled: true,
+          show: false,
         },
       },
       dataLabels: {
@@ -59,21 +93,24 @@ const VendorDashboard = () => {
       stroke: {
         curve: "smooth",
         width: 3,
-        colors: ["#3B82F6"],
+        colors: ["#0f766e"],
       },
       fill: {
         type: "gradient",
         gradient: {
           shadeIntensity: 1,
-          opacityFrom: 0.7,
-          opacityTo: 0.3,
+          opacityFrom: 0.45,
+          opacityTo: 0.08,
+          stops: [0, 95, 100],
         },
       },
       xaxis: {
-        categories: stats.monthly_revenue_chart.map((item: { revenue: number; month: string }) => item.month),
+        categories: stats.monthly_revenue_chart.map(
+          (item: { revenue: number; month: string }) => item.month
+        ),
         labels: {
           style: {
-            colors: "#6B7280",
+            colors: "#64748b",
             fontSize: "12px",
           },
         },
@@ -81,19 +118,20 @@ const VendorDashboard = () => {
       yaxis: {
         labels: {
           style: {
-            colors: "#6B7280",
+            colors: "#64748b",
             fontSize: "12px",
           },
-          formatter: (value: number) => `৳${value.toLocaleString()}`,
+          formatter: (value: number) => formatCurrency(value),
         },
       },
       tooltip: {
         y: {
-          formatter: (value: number) => `৳${value.toLocaleString()}`,
+          formatter: (value: number) => formatCurrency(value),
         },
       },
       grid: {
-        borderColor: "#E5E7EB",
+        borderColor: "#e2e8f0",
+        strokeDashArray: 4,
       },
     };
 
@@ -105,7 +143,6 @@ const VendorDashboard = () => {
     };
   }, [stats]);
 
-  // Initialize Orders Chart
   useEffect(() => {
     if (!ordersChartRef.current || !stats?.orders) return;
 
@@ -120,17 +157,17 @@ const VendorDashboard = () => {
       ],
       chart: {
         type: "donut",
-        height: 350,
+        height: 320,
       },
       labels: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"],
-      colors: ["#FCD34D", "#60A5FA", "#A78BFA", "#34D399", "#F87171"],
+      colors: ["#f59e0b", "#3b82f6", "#8b5cf6", "#10b981", "#ef4444"],
       legend: {
         position: "bottom",
       },
       plotOptions: {
         pie: {
           donut: {
-            size: "65%",
+            size: "68%",
           },
         },
       },
@@ -147,7 +184,6 @@ const VendorDashboard = () => {
     };
   }, [stats]);
 
-  // Recent Orders Table Columns
   const orderColumns: ColumnsType<RecentOrder> = [
     {
       title: "Order #",
@@ -165,7 +201,7 @@ const VendorDashboard = () => {
       title: "Amount",
       dataIndex: "total_amount",
       key: "total_amount",
-      render: (amount: number) => `৳${amount.toLocaleString()}`,
+      render: (amount: number) => formatCurrency(amount),
     },
     {
       title: "Status",
@@ -179,6 +215,7 @@ const VendorDashboard = () => {
           delivered: "green",
           cancelled: "red",
         };
+
         return <Tag color={colors[status] || "default"}>{status.toUpperCase()}</Tag>;
       },
     },
@@ -193,6 +230,7 @@ const VendorDashboard = () => {
           failed: "red",
           refunded: "volcano",
         };
+
         return <Tag color={colors[status] || "default"}>{status.toUpperCase()}</Tag>;
       },
     },
@@ -204,15 +242,7 @@ const VendorDashboard = () => {
     },
   ];
 
-  // Top Products Table Columns
-  interface TopProduct {
-    product__name: string;
-    product__id: number;
-    total_sold: number;
-    revenue: number;
-  }
-
-  const productColumns = [
+  const productColumns: ColumnsType<TopProduct> = [
     {
       title: "Product",
       dataIndex: "product__name",
@@ -222,21 +252,21 @@ const VendorDashboard = () => {
       title: "Sold",
       dataIndex: "total_sold",
       key: "total_sold",
-      align: "center" as const,
+      align: "center",
       sorter: (a: TopProduct, b: TopProduct) => a.total_sold - b.total_sold,
     },
     {
       title: "Revenue",
       dataIndex: "revenue",
       key: "revenue",
-      render: (amount: number) => `৳${amount.toLocaleString()}`,
+      render: (amount: number) => formatCurrency(amount),
       sorter: (a: TopProduct, b: TopProduct) => a.revenue - b.revenue,
     },
   ];
 
   if (isLoading) {
     return (
-      <div style={{ textAlign: "center", padding: "100px 0" }}>
+      <div className="vendor-dashboard-loading">
         <Spin size="large" />
       </div>
     );
@@ -253,126 +283,227 @@ const VendorDashboard = () => {
     );
   }
 
-  return (
-    <div style={{ padding: "24px" }}>
-      <h1 style={{ marginBottom: "24px" }}>Dashboard</h1>
+  const growthIsPositive = stats.revenue.growth >= 0;
+  const lastUpdate = new Date().toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
-      {/* Key Metrics Cards */}
-      <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
+  return (
+    <div className="vendor-dashboard-page">
+      <div className="vendor-dashboard-head">
+        <div>
+          <Typography.Title level={3} className="vendor-dashboard-title">
+            Store Performance Dashboard
+          </Typography.Title>
+          <Typography.Text className="vendor-dashboard-subtitle">
+            Quick snapshot of orders, products, and revenue trends.
+          </Typography.Text>
+        </div>
+        <div className="vendor-dashboard-head-actions">
+          <Typography.Text className="vendor-dashboard-last-updated">
+            Updated {lastUpdate}
+          </Typography.Text>
+          <Button
+            icon={<ReloadOutlined />}
+            onClick={() => refetch()}
+            loading={isFetching}
+          >
+            Refresh
+          </Button>
+          <Tag color="cyan" className="vendor-dashboard-pill">
+            {stats.overview.total_orders} total orders
+          </Tag>
+        </div>
+      </div>
+
+      <Card className="vendor-quick-card vendor-stagger-item vendor-stagger-1">
+        <div className="vendor-quick-head">
+          <Typography.Text className="vendor-quick-title">
+            Quick Actions
+          </Typography.Text>
+          <Typography.Text className="vendor-quick-subtitle">
+            Frequent tasks in one click
+          </Typography.Text>
+        </div>
+        <Space size={[10, 10]} wrap>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            className="add-product-btn"
+            onClick={() => navigate("/products/create")}
+          >
+            Add Product
+          </Button>
+          <Button
+            icon={<OrderedListOutlined />}
+            onClick={() => navigate("/orders")}
+          >
+            View Orders
+          </Button>
+          <Button
+            icon={<ShopOutlined />}
+            onClick={() => navigate("/store-profile")}
+          >
+            Store Profile
+          </Button>
+        </Space>
+      </Card>
+
+      <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} lg={6}>
-          <Card>
+          <Card className="vendor-metric-card vendor-metric-revenue vendor-stagger-item vendor-stagger-2">
             <Statistic
               title="Total Revenue"
               value={stats.revenue.total}
               precision={2}
-              valueStyle={{ color: "#3f8600" }}
+              formatter={(value) => formatCurrency(Number(value))}
               prefix={<DollarOutlined />}
-              suffix="৳"
             />
+            <Typography.Text className="vendor-metric-footnote">
+              Today: {formatCurrency(stats.revenue.today)}
+            </Typography.Text>
           </Card>
         </Col>
+
         <Col xs={24} sm={12} lg={6}>
-          <Card>
+          <Card className="vendor-metric-card vendor-metric-growth vendor-stagger-item vendor-stagger-3">
             <Statistic
-              title="This Month"
-              value={stats.revenue.this_month}
-              precision={2}
-              valueStyle={{ color: stats.revenue.growth >= 0 ? "#3f8600" : "#cf1322" }}
-              prefix={stats.revenue.growth >= 0 ? <RiseOutlined /> : <FallOutlined />}
-              suffix={`৳ (${stats.revenue.growth.toFixed(1)}%)`}
+              title="Monthly Growth"
+              value={stats.revenue.growth}
+              precision={1}
+              suffix="%"
+              prefix={growthIsPositive ? <RiseOutlined /> : <FallOutlined />}
+              valueStyle={{ color: growthIsPositive ? "#0f766e" : "#dc2626" }}
             />
+            <Typography.Text className="vendor-metric-footnote">
+              This month: {formatCurrency(stats.revenue.this_month)}
+            </Typography.Text>
           </Card>
         </Col>
+
         <Col xs={24} sm={12} lg={6}>
-          <Card>
+          <Card className="vendor-metric-card vendor-metric-orders vendor-stagger-item vendor-stagger-4">
             <Statistic
-              title="Total Orders"
+              title="Orders"
               value={stats.overview.total_orders}
               prefix={<ShoppingCartOutlined />}
             />
-            <div style={{ marginTop: "8px", fontSize: "12px", color: "#888" }}>
-              Pending: {stats.overview.pending_orders} | Processing: {stats.overview.processing_orders}
-            </div>
+            <Typography.Text className="vendor-metric-footnote">
+              Pending {stats.overview.pending_orders}, Processing {stats.overview.processing_orders}
+            </Typography.Text>
           </Card>
         </Col>
+
         <Col xs={24} sm={12} lg={6}>
-          <Card>
+          <Card className="vendor-metric-card vendor-metric-products vendor-stagger-item vendor-stagger-5">
             <Statistic
-              title="Total Products"
+              title="Products"
               value={stats.products.total}
               prefix={<ProductOutlined />}
             />
-            <div style={{ marginTop: "8px", fontSize: "12px", color: "#888" }}>
-              Active: {stats.products.active} | Low Stock: {stats.products.low_stock}
-            </div>
+            <Typography.Text className="vendor-metric-footnote">
+              Active {stats.products.active}, Low stock {stats.products.low_stock}
+            </Typography.Text>
           </Card>
         </Col>
       </Row>
 
-      {/* Account Balances */}
-      <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
+      <Row gutter={[16, 16]} style={{ marginTop: "2px" }}>
         <Col xs={24} sm={12} lg={6}>
-          <Card>
+          <Card className="vendor-metric-card vendor-metric-balance vendor-stagger-item vendor-stagger-2">
             <Statistic
               title="Total Balance"
               value={stats.accounts.total_balance}
               precision={2}
               prefix={<WalletOutlined />}
-              suffix="৳"
+              formatter={(value) => formatCurrency(Number(value))}
             />
           </Card>
         </Col>
+
         <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic title="Cash" value={stats.accounts.cash} precision={2} suffix="৳" />
+          <Card className="vendor-metric-card vendor-mini-card vendor-stagger-item vendor-stagger-3">
+            <Statistic
+              title="Cash"
+              value={stats.accounts.cash}
+              precision={2}
+              formatter={(value) => formatCurrency(Number(value))}
+            />
           </Card>
         </Col>
+
         <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic title="Bank" value={stats.accounts.bank} precision={2} suffix="৳" />
+          <Card className="vendor-metric-card vendor-mini-card vendor-stagger-item vendor-stagger-4">
+            <Statistic
+              title="Bank"
+              value={stats.accounts.bank}
+              precision={2}
+              formatter={(value) => formatCurrency(Number(value))}
+            />
           </Card>
         </Col>
+
         <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic title="Mobile Banking" value={stats.accounts.mfs} precision={2} suffix="৳" />
+          <Card className="vendor-metric-card vendor-mini-card vendor-stagger-item vendor-stagger-5">
+            <Statistic
+              title="Mobile Banking"
+              value={stats.accounts.mfs}
+              precision={2}
+              formatter={(value) => formatCurrency(Number(value))}
+            />
           </Card>
         </Col>
       </Row>
 
-      {/* Charts */}
-      <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
+      <Row gutter={[16, 16]} style={{ marginTop: "2px" }}>
         <Col xs={24} lg={16}>
-          <Card title="Monthly Revenue Trend">
-            <div ref={revenueChartRef}></div>
+          <Card
+            title="Monthly Revenue Trend"
+            className="vendor-chart-card vendor-stagger-item vendor-stagger-3"
+          >
+            <div ref={revenueChartRef} className="vendor-chart-area" />
           </Card>
         </Col>
+
         <Col xs={24} lg={8}>
-          <Card title="Order Status Distribution">
-            <div ref={ordersChartRef}></div>
+          <Card
+            title="Order Status Distribution"
+            className="vendor-chart-card vendor-stagger-item vendor-stagger-4"
+          >
+            <div ref={ordersChartRef} className="vendor-chart-donut" />
           </Card>
         </Col>
       </Row>
 
-      {/* Recent Orders */}
-      <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
+      <Row gutter={[16, 16]} style={{ marginTop: "2px" }}>
         <Col xs={24} lg={16}>
-          <Card title="Recent Orders">
+          <Card
+            title="Recent Orders"
+            className="vendor-table-card vendor-stagger-item vendor-stagger-4"
+          >
             <Table
+              className="vendor-data-table"
               columns={orderColumns}
               dataSource={stats.recent_orders}
               rowKey="id"
-              pagination={{ pageSize: 5 }}
+              pagination={{ pageSize: 5, showSizeChanger: false }}
               scroll={{ x: 800 }}
             />
           </Card>
         </Col>
+
         <Col xs={24} lg={8}>
-          <Card title="Top Selling Products">
+          <Card
+            title="Top Selling Products"
+            className="vendor-table-card vendor-stagger-item vendor-stagger-5"
+          >
             <Table
+              className="vendor-data-table"
               columns={productColumns}
               dataSource={stats.top_products}
               rowKey="product__id"
-              pagination={{ pageSize: 5 }}
+              pagination={{ pageSize: 5, showSizeChanger: false }}
               size="small"
             />
           </Card>

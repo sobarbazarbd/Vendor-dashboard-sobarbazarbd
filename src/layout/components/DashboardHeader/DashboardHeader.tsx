@@ -1,10 +1,11 @@
 import {
+  Avatar,
   Badge,
   Button,
   Flex,
   Image,
+  Input,
   Layout,
-  List,
   Popover,
   Space,
   Tooltip,
@@ -27,11 +28,14 @@ interface Props {
 }
 
 const DashboardHeader: React.FC<Props> = ({ setOpen }) => {
-  const { themes, darkColor } = useSelector((state: RootState) => state.themes);
+  const { themes } = useSelector((state: RootState) => state.themes);
   const { data } = useGetProfileQuery();
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const username = data?.data?.username || "Vendor";
+  const userInitial = username.charAt(0).toUpperCase();
 
   const handleLogout = (): void => {
     dispatch(loggedOut());
@@ -41,56 +45,42 @@ const DashboardHeader: React.FC<Props> = ({ setOpen }) => {
 
   return (
     <React.Fragment>
-      <Layout.Header
-        id="dashboard-header"
-        style={{
-          background: themes === "light" ? "white" : darkColor,
-        }}
-      >
-        {" "}
-        <Flex align="center" justify="center" gap={8}>
+      <Layout.Header id="dashboard-header">
+        <div className="dashboard-header-left">
           <Button
             onClick={() => setOpen(true)}
-            type="primary"
-            ghost
+            type="default"
             size="large"
             icon={<Iconify name="pepicons-pop:menu" />}
             id="dashboard-header-icon"
+            className="dashboard-action-btn"
           />
-          <div>
-            <Typography.Text
-              strong
-              style={{
-                display: "flex",
-                fontSize: "1.2rem",
-              }}
-            >
-              Hello, {data?.data?.username || "Education Hub"}
+
+          <div className="dashboard-header-title">
+            <Typography.Text className="dashboard-header-hello">
+              Hello, {username}
             </Typography.Text>
-            <Typography.Text
-              type="secondary"
-              style={{ display: "block", lineHeight: 0.6, fontSize: "11px" }}
-            >
-              {greeting()}
+            <Typography.Text className="dashboard-header-subtitle">
+              {greeting()} - keep your store performance in check
             </Typography.Text>
           </div>
-        </Flex>
-        {/* <Flex align="center" justify="center">
-          <Input
-            placeholder="Search"
-            prefix={<CiSearch />}
-            style={{ width: "300px" }}
-            className="search-section"
-          />
-        </Flex> */}
-        <Flex align="center" justify="center" gap={20}>
-          <Badge count={17}>
+        </div>
+
+        <Input
+          placeholder="Search products, orders, invoices"
+          prefix={<Iconify name="iconamoon:search-light" />}
+          className="search-section"
+          style={{ width: 310 }}
+          allowClear
+        />
+
+        <Flex className="dashboard-header-actions">
+          <Badge count={0} showZero={false}>
             <Popover
               content={
-                <List
-                  itemLayout="vertical"
-                  renderItem={() => <List.Item></List.Item>}
-                />
+                <Typography.Text type="secondary">
+                  No new notifications.
+                </Typography.Text>
               }
               trigger="click"
               placement="bottomRight"
@@ -99,6 +89,7 @@ const DashboardHeader: React.FC<Props> = ({ setOpen }) => {
                 type="default"
                 shape="circle"
                 icon={<Iconify name="ant-design:bell-outlined" />}
+                className="dashboard-action-btn"
               />
             </Popover>
           </Badge>
@@ -120,60 +111,45 @@ const DashboardHeader: React.FC<Props> = ({ setOpen }) => {
                   }
                 />
               }
+              className="dashboard-action-btn"
             />
           </Tooltip>
 
           <Popover
             content={
-              <Space
-                direction="vertical"
-                style={{
-                  height: 180,
-                  width: 230,
-                  display: "grid",
-                  placeItems: "center",
-                }}
-              >
+              <Space direction="vertical" className="dashboard-user-popover">
                 <Image
                   src={avatar}
                   alt="Profile picture"
                   preview={false}
                   style={{
-                    width: 80,
-                    height: 80,
+                    width: 72,
+                    height: 72,
                     borderRadius: "100%",
                     pointerEvents: "none",
+                    objectFit: "cover",
                   }}
                 />
-                <Typography.Text strong>
-                  {data?.data?.username}{" "}
+                <Typography.Text strong>{username}</Typography.Text>
+                <Typography.Text type="secondary" style={{ fontSize: "12px" }}>
+                  Account settings and session controls
                 </Typography.Text>
-                <Typography.Text type="secondary" style={{ fontSize: "11px" }}>
-                  {/* info.codecanvascreation . */}
-                </Typography.Text>
-                <Space>
+                <div className="dashboard-user-popover-actions">
                   <Link to="/profile">
-                    <Button
-                      block
-                      type="link"
-                      ghost
-                      icon={<Iconify name="uil:user" />}
-                    >
+                    <Button type="link" icon={<Iconify name="uil:user" />}>
                       Profile
                     </Button>
                   </Link>
 
                   <Button
-                    block
                     type="link"
-                    ghost
                     danger
                     icon={<Iconify name="hugeicons:logout-05" />}
                     onClick={handleLogout}
                   >
                     Logout
                   </Button>
-                </Space>
+                </div>
               </Space>
             }
             trigger="click"
@@ -182,7 +158,8 @@ const DashboardHeader: React.FC<Props> = ({ setOpen }) => {
             <Button
               type="default"
               shape="circle"
-              icon={<Iconify name="ph:user" />}
+              className="dashboard-action-btn"
+              icon={<Avatar size={26}>{userInitial}</Avatar>}
             />
           </Popover>
         </Flex>

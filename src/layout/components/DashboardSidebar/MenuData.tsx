@@ -16,6 +16,7 @@ import { HiOutlineDocumentReport } from "react-icons/hi";
 import { PiMoneyWavy } from "react-icons/pi";
 import { TbFileInvoice } from "react-icons/tb";
 import { AiOutlineStock } from "react-icons/ai";
+import SidebarButtom from "./SidebarButtom";
 
 const MenuData: React.FC = () => {
   const { themes } = useSelector<RootState, ThemesTypes>(
@@ -25,11 +26,6 @@ const MenuData: React.FC = () => {
   const { data: dashboardData } = useGetDashboardDataQuery({});
 
   const permissions = dashboardData?.data?.permissions || [];
-
-  const iconStyle: React.CSSProperties | undefined = {
-    marginRight: "8px",
-    color: themes === "light" ? "#000000" : "#FFFFFF",
-  };
 
   // const settings = [
   //   hasPermissionForModule(permissions, "routine") && {
@@ -129,11 +125,23 @@ const MenuData: React.FC = () => {
     },
   ].filter(Boolean);
 
+  const productItems = product.filter(Boolean) as ItemType<MenuItemType>[];
+  const productKeys = productItems
+    .map((item) => (item && "key" in item && item.key ? String(item.key) : ""))
+    .filter((key): key is string => Boolean(key));
+
+  const rootKeys = ["/", ...productKeys].sort((a, b) => b.length - a.length);
+
+  const selectedMenuKey =
+    rootKeys.find((key) =>
+      key === "/" ? pathname === "/" : pathname === key || pathname.startsWith(`${key}/`)
+    ) || "/";
+
   const items: MenuProps["items"] = [
     {
       key: "/",
       label: <Link to="/">Dashboard</Link>,
-      icon: <Iconify name="mage:dashboard" style={iconStyle} />,
+      icon: <Iconify name="mage:dashboard" />,
     },
   ];
 
@@ -141,36 +149,34 @@ const MenuData: React.FC = () => {
     <div className="dashboard-sidebar-style">
       <div>
         <SidebarTop />
-        <span className="features-title text-blue-500">Main Menu</span>
-        <div>
+        <span className="features-title">Main Menu</span>
+        <div className="menu-group">
           <Menu
             style={{
               backgroundColor: "transparent",
             }}
             mode="inline"
             theme={themes}
-            selectedKeys={[pathname]}
+            selectedKeys={[selectedMenuKey]}
             items={items}
           />
         </div>
 
-        <div>
+        <span className="features-title">Operations</span>
+        <div className="menu-group">
           <Menu
             style={{
               backgroundColor: "transparent",
             }}
             mode="inline"
             theme={themes}
-            selectedKeys={[pathname]}
-            items={product.filter(Boolean) as ItemType<MenuItemType>[]}
+            selectedKeys={[selectedMenuKey]}
+            items={productItems}
           />
         </div>
       </div>
 
-      <br />
-      <br />
-
-      {/* <SidebarButtom /> */}
+      <SidebarButtom />
     </div>
   );
 };

@@ -1,188 +1,313 @@
-import { Card, Row, Col, Button, Tag, Image, Space } from "antd";
+import { type ReactNode } from "react";
 import {
+  BankOutlined,
   EditOutlined,
+  EnvironmentOutlined,
+  GlobalOutlined,
   MailOutlined,
   PhoneOutlined,
-  GlobalOutlined,
-  EnvironmentOutlined,
   ShopOutlined,
+  SolutionOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
+import {
+  Avatar,
+  Button,
+  Card,
+  Col,
+  Empty,
+  Row,
+  Space,
+  Tag,
+  Typography,
+} from "antd";
 import dayjs from "dayjs";
 import { useDispatch } from "react-redux";
+import BreadCrumb from "../../../common/BreadCrumb/BreadCrumb";
 import { showModal } from "../../../app/features/modalSlice";
 import UpdateStoreProfile from "../components/UpdateStoreProfile";
 import { useGetStoreSettingsQuery } from "../api/storeSettingsEndPoints";
+import { IStoreSettings } from "../types/storeSettingsType";
+
+const cardBaseClass =
+  "rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] shadow-sm";
+const heroCardClass =
+  "rounded-2xl border border-[#cdeedb] bg-gradient-to-br from-white to-[#eefff7] shadow-sm";
+const chipClass = "!rounded-full !border-0 !bg-[#e8f7ef] !text-[#1f6f45] !font-semibold";
+
+const formatDate = (value?: string | null) =>
+  value && dayjs(value).isValid() ? dayjs(value).format("DD MMM YYYY") : "N/A";
+
+const getText = (value?: string | number | null) =>
+  value === null || value === undefined || String(value).trim() === ""
+    ? "N/A"
+    : String(value);
+
+const normalizeLink = (value?: string | null) => {
+  if (!value) {
+    return null;
+  }
+
+  return /^https?:\/\//i.test(value) ? value : `https://${value}`;
+};
+
+const LinkValue = ({ url }: { url?: string | null }) => {
+  const href = normalizeLink(url);
+
+  if (!href) {
+    return <span className="text-sm text-[var(--app-text-soft)]">N/A</span>;
+  }
+
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className="break-all text-sm font-semibold text-[#1f6f45] hover:text-[#279e5a] hover:underline"
+    >
+      {href}
+    </a>
+  );
+};
 
 const StoreProfilePage = () => {
   const { data, isLoading } = useGetStoreSettingsQuery<any>({});
   const dispatch = useDispatch();
 
-  const store = data?.data;
+  const payload = data?.data;
+  const store = (
+    Array.isArray(payload?.results) ? payload?.results?.[0] : payload
+  ) as IStoreSettings | undefined;
 
   if (isLoading) {
-    return <div className="text-center py-20">Loading store profile...</div>;
+    return (
+      <div className="space-y-4 pb-1">
+        <BreadCrumb />
+        <Card className={heroCardClass}>
+          <Typography.Text className="text-sm text-[var(--app-text-soft)]">
+            Loading store profile...
+          </Typography.Text>
+        </Card>
+      </div>
+    );
   }
 
   if (!store) {
     return (
-      <div className="text-center py-20 text-red-500">Store data not found</div>
+      <div className="space-y-4 pb-1">
+        <BreadCrumb />
+        <Card className={cardBaseClass}>
+          <Empty description="Store data not found" />
+        </Card>
+      </div>
     );
   }
 
+  const weekendDays = Array.isArray(store.weekend_days) ? store.weekend_days : [];
+
   return (
-    <div className="p-4 md:p-8 space-y-6">
-      {/* Header */}
-      <Card className="rounded-2xl shadow-lg border-0 bg-gradient-to-r from-blue-50 to-indigo-50">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-5">
-            <Image
+    <div className="space-y-4 pb-1">
+      <BreadCrumb />
+
+      <Card className={heroCardClass}>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <Avatar
               src={store.logo}
-              alt={store.name}
-              width={90}
-              height={90}
-              className="rounded-full border-4 border-white shadow-md"
-              preview={false}
+              icon={<ShopOutlined />}
+              size={86}
+              shape="square"
+              className="!rounded-2xl !border !border-[#bfe6cf] !bg-white !shadow-sm"
             />
 
             <div>
-              <h1 className="text-3xl font-bold flex items-center gap-2">
-                <ShopOutlined className="text-blue-600" />
-                {store.name}
-              </h1>
+              <Typography.Title level={3} className="!mb-1 !text-[var(--app-text)]">
+                {getText(store.name)}
+              </Typography.Title>
+              <Typography.Text className="text-sm text-[var(--app-text-soft)]">
+                {getText(store.store_type)} store in {getText(store.city)}
+              </Typography.Text>
 
-              <p className="text-gray-600 mt-1">
-                {store.store_type} Store • {store.city}
-              </p>
-
-              <Space size="small" className="mt-2">
-                <Tag color="blue">{store.prefix}</Tag>
-                {store.is_affiliated_store && (
-                  <Tag color="green">Affiliated</Tag>
-                )}
+              <Space wrap style={{ marginTop: 8 }}>
+                <Tag className={chipClass}>{getText(store.prefix)}</Tag>
+                <Tag className={chipClass}>
+                  {store.is_affiliated_store ? "Affiliated" : "Independent"}
+                </Tag>
               </Space>
             </div>
           </div>
 
-          <Button
-            size="large"
-            type="primary"
-            icon={<EditOutlined />}
-            className="rounded-lg shadow-md"
-            onClick={() =>
-              dispatch(
-                showModal({
-                  title: "Update Store Profile",
-                  content: <UpdateStoreProfile />,
-                })
-              )
-            }
-          >
-            Update Store Profile
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="primary"
+              icon={<EditOutlined />}
+              className="!rounded-xl !bg-[#279e5a] !border-[#279e5a] hover:!bg-[#1f8a4e] hover:!border-[#1f8a4e]"
+              onClick={() =>
+                dispatch(
+                  showModal({
+                    title: "Update Store Profile",
+                    content: <UpdateStoreProfile />,
+                  })
+                )
+              }
+            >
+              Update Profile
+            </Button>
+
+            {store.website_url && (
+              <Button
+                icon={<GlobalOutlined />}
+                href={normalizeLink(store.website_url) || undefined}
+                target="_blank"
+                rel="noreferrer"
+                className="!rounded-xl"
+              >
+                Visit Website
+              </Button>
+            )}
+          </div>
         </div>
       </Card>
 
-      {/* Info Sections */}
-      <Row gutter={[20, 20]}>
-        {/* Basic Info */}
-        <Col xs={24} md={12}>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <Card className={`${cardBaseClass} h-full`}>
+          <Typography.Text className="block text-xs text-[var(--app-text-soft)]">
+            Established
+          </Typography.Text>
+          <Typography.Text className="mt-1 block text-lg font-bold !text-[var(--app-text)]">
+            {formatDate(store.established_date)}
+          </Typography.Text>
+        </Card>
+
+        <Card className={`${cardBaseClass} h-full`}>
+          <Typography.Text className="block text-xs text-[var(--app-text-soft)]">
+            Weekend Days
+          </Typography.Text>
+          <Typography.Text className="mt-1 block text-lg font-bold !text-[var(--app-text)]">
+            {weekendDays.length}
+          </Typography.Text>
+        </Card>
+
+        <Card className={`${cardBaseClass} h-full`}>
+          <Typography.Text className="block text-xs text-[var(--app-text-soft)]">
+            Store Type
+          </Typography.Text>
+          <Typography.Text className="mt-1 block text-lg font-bold !text-[var(--app-text)]">
+            {getText(store.store_type)}
+          </Typography.Text>
+        </Card>
+
+        <Card className={`${cardBaseClass} h-full`}>
+          <Typography.Text className="block text-xs text-[var(--app-text-soft)]">
+            Location
+          </Typography.Text>
+          <Typography.Text className="mt-1 block text-lg font-bold !text-[var(--app-text)]">
+            {getText(store.city)}
+          </Typography.Text>
+        </Card>
+      </div>
+
+      <Row gutter={[14, 14]}>
+        <Col xs={24} lg={12}>
           <Card
-            title="Basic Information"
-            className="rounded-xl hover:shadow-lg transition"
+            title={
+              <Space>
+                <EnvironmentOutlined />
+                <span>Contact & Location</span>
+              </Space>
+            }
+            className={cardBaseClass}
           >
             <InfoRow
               icon={<EnvironmentOutlined />}
               label="Address"
-              value={store.address}
+              value={getText(store.address)}
             />
             <InfoRow
               icon={<MailOutlined />}
-              label="Email"
-              value={store.contact_email}
+              label="Contact Email"
+              value={getText(store.contact_email)}
             />
             <InfoRow
               icon={<PhoneOutlined />}
-              label="Phone"
-              value={store.phone_number}
+              label="Phone Number"
+              value={getText(store.phone_number)}
             />
             <InfoRow
               icon={<GlobalOutlined />}
               label="Website"
-              value={
-                <a
-                  href={store.website_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-blue-600"
-                >
-                  {store.website_url}
-                </a>
-              }
+              value={<LinkValue url={store.website_url} />}
             />
           </Card>
         </Col>
 
-        {/* Store Details */}
-        <Col xs={24} md={12}>
+        <Col xs={24} lg={12}>
           <Card
-            title="Store Details"
-            className="rounded-xl hover:shadow-lg transition"
+            title={
+              <Space>
+                <BankOutlined />
+                <span>Business Details</span>
+              </Space>
+            }
+            className={cardBaseClass}
           >
-            <InfoRow
-              label="Established"
-              value={dayjs(store.established_date).format("DD MMM YYYY")}
-            />
-            <InfoRow label="Tax ID" value={store.tax_id} />
-            <InfoRow label="Founder" value={store.founder || "Not specified"} />
+            <InfoRow label="Tax ID" value={getText(store.tax_id)} />
+            <InfoRow label="Founder" value={getText(store.founder)} />
+            <InfoRow label="Trade License" value={getText(store.trade_license)} />
             <InfoRow
               label="Return Policy"
-              value={store.return_policy || "N/A"}
+              value={getText(store.return_policy)}
             />
           </Card>
         </Col>
 
-        {/* Social Links */}
-        <Col xs={24} md={12}>
+        <Col xs={24} lg={12}>
           <Card
-            title="Social Media"
-            className="rounded-xl hover:shadow-lg transition"
+            title={
+              <Space>
+                <TeamOutlined />
+                <span>Social Presence</span>
+              </Space>
+            }
+            className={cardBaseClass}
           >
-            <InfoRow label="Facebook" value={store.facebook_url || "N/A"} />
-            <InfoRow label="Twitter" value={store.twitter_url || "N/A"} />
-            <InfoRow label="LinkedIn" value={store.linkedin_url || "N/A"} />
+            <InfoRow label="Facebook" value={<LinkValue url={store.facebook_url} />} />
+            <InfoRow label="Twitter" value={<LinkValue url={store.twitter_url} />} />
+            <InfoRow label="LinkedIn" value={<LinkValue url={store.linkedin_url} />} />
           </Card>
         </Col>
 
-        {/* Attendance Info */}
-        <Col xs={24} md={12}>
+        <Col xs={24} lg={12}>
           <Card
-            title="Attendance Integration"
-            className="rounded-xl hover:shadow-lg transition"
+            title={
+              <Space>
+                <SolutionOutlined />
+                <span>Attendance Integration</span>
+              </Space>
+            }
+            className={cardBaseClass}
           >
             <InfoRow
-              label="API URL"
-              value={store.attendance_base_api_url || "N/A"}
+              label="Base API URL"
+              value={<LinkValue url={store.attendance_base_api_url} />}
             />
             <InfoRow
               label="Device ID"
-              value={store.attendance_device_id || "N/A"}
+              value={getText(store.attendance_device_id)}
             />
             <InfoRow
               label="Weekend Days"
-              value={
-                store.weekend_days.length > 0
-                  ? store.weekend_days.join(", ")
-                  : "None"
-              }
+              value={weekendDays.length > 0 ? weekendDays.join(", ") : "None"}
             />
           </Card>
         </Col>
       </Row>
 
-      {/* Description */}
       {store.description && (
-        <Card title="Description" className="rounded-xl shadow-sm">
-          {store.description}
+        <Card title="Description" className={cardBaseClass}>
+          <Typography.Text className="text-sm text-[var(--app-text-soft)]">
+            {store.description}
+          </Typography.Text>
         </Card>
       )}
     </div>
@@ -191,23 +316,22 @@ const StoreProfilePage = () => {
 
 export default StoreProfilePage;
 
-/* -------------------------------- */
-/* Reusable Info Row Component */
-/* -------------------------------- */
 const InfoRow = ({
   icon,
   label,
   value,
 }: {
-  icon?: React.ReactNode;
+  icon?: ReactNode;
   label: string;
-  value: React.ReactNode;
+  value: ReactNode;
 }) => (
-  <div className="flex justify-between items-start py-2 border-b last:border-b-0">
-    <span className="text-gray-500 flex items-center gap-2">
+  <div className="flex flex-col gap-1 border-b border-[var(--app-border)] py-3 last:border-b-0 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+    <span className="inline-flex items-center gap-2 text-sm text-[var(--app-text-soft)]">
       {icon}
       {label}
     </span>
-    <span className="font-medium text-right">{value}</span>
+    <span className="text-left text-sm font-semibold text-[var(--app-text)] sm:text-right">
+      {value}
+    </span>
   </div>
 );

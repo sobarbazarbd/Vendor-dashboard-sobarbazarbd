@@ -110,7 +110,7 @@ const moneyReceiptColumns = (): ColumnsType<MoneyReceipt> => {
       align: "center",
       render: (amount: number) => (
         <span style={{ fontWeight: "bold", color: "#1890ff" }}>
-          $
+          Tk{" "}
           {amount.toLocaleString(undefined, {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
