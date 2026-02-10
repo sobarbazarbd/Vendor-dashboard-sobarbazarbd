@@ -118,16 +118,16 @@ const MoneyReceiptPage = () => {
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
         <Card className={`${cardBaseClass} h-full`}>
           <div className="space-y-1">
             <Typography.Text className="block text-xs text-[var(--app-text-soft)]">
               Total Receipts
             </Typography.Text>
-            <Typography.Text className="text-2xl font-bold !text-[var(--app-text)]">
+            <Typography.Text className="block text-2xl font-bold !text-[var(--app-text)] leading-tight">
               {totalReceipts}
             </Typography.Text>
-            <Typography.Text className="text-xs text-[var(--app-text-soft)]">
+            <Typography.Text className="block text-xs text-[var(--app-text-soft)]">
               All receipt records
             </Typography.Text>
           </div>
@@ -138,10 +138,10 @@ const MoneyReceiptPage = () => {
             <Typography.Text className="block text-xs text-[var(--app-text-soft)]">
               Visible Collection
             </Typography.Text>
-            <Typography.Text className="text-2xl font-bold !text-[var(--app-text)]">
+            <Typography.Text className="block text-2xl font-bold !text-[var(--app-text)] leading-tight">
               {formatCurrency(collectedAmount)}
             </Typography.Text>
-            <Typography.Text className="text-xs text-[var(--app-text-soft)]">
+            <Typography.Text className="block text-xs text-[var(--app-text-soft)]">
               Total amount in this page
             </Typography.Text>
           </div>
@@ -152,10 +152,10 @@ const MoneyReceiptPage = () => {
             <Typography.Text className="block text-xs text-[var(--app-text-soft)]">
               Average Receipt
             </Typography.Text>
-            <Typography.Text className="text-2xl font-bold !text-[var(--app-text)]">
+            <Typography.Text className="block text-2xl font-bold !text-[var(--app-text)] leading-tight">
               {formatCurrency(averageReceiptAmount)}
             </Typography.Text>
-            <Typography.Text className="text-xs text-[var(--app-text-soft)]">
+            <Typography.Text className="block text-xs text-[var(--app-text-soft)]">
               Mean receipt value
             </Typography.Text>
           </div>

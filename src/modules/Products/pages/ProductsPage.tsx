@@ -138,16 +138,16 @@ const ProductsPage = () => {
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
         <Card className={`${cardBaseClass} h-full`}>
           <div className="space-y-1">
             <Typography.Text className="block text-xs text-[var(--app-text-soft)]">
               Total Products
             </Typography.Text>
-            <Typography.Text className="text-2xl font-bold !text-[var(--app-text)]">
+            <Typography.Text className="block text-2xl font-bold !text-[var(--app-text)] leading-tight">
               {totalProducts}
             </Typography.Text>
-            <Typography.Text className="text-xs text-[var(--app-text-soft)]">
+            <Typography.Text className="block text-xs text-[var(--app-text-soft)]">
               All catalog records
             </Typography.Text>
           </div>
@@ -158,10 +158,10 @@ const ProductsPage = () => {
             <Typography.Text className="block text-xs text-[var(--app-text-soft)]">
               Active in This Page
             </Typography.Text>
-            <Typography.Text className="text-2xl font-bold !text-[var(--app-text)]">
+            <Typography.Text className="block text-2xl font-bold !text-[var(--app-text)] leading-tight">
               {activeProducts}
             </Typography.Text>
-            <Typography.Text className="text-xs text-[var(--app-text-soft)]">
+            <Typography.Text className="block text-xs text-[var(--app-text-soft)]">
               Out of {products.length} visible items
             </Typography.Text>
           </div>
@@ -172,10 +172,10 @@ const ProductsPage = () => {
             <Typography.Text className="block text-xs text-[var(--app-text-soft)]">
               Applied Filters
             </Typography.Text>
-            <Typography.Text className="text-2xl font-bold !text-[var(--app-text)]">
+            <Typography.Text className="block text-2xl font-bold !text-[var(--app-text)] leading-tight">
               {activeFilterCount}
             </Typography.Text>
-            <Typography.Text className="text-xs text-[var(--app-text-soft)]">
+            <Typography.Text className="block text-xs text-[var(--app-text-soft)]">
               Quick filter tracking
             </Typography.Text>
           </div>

@@ -351,7 +351,7 @@ const VendorDashboard = () => {
       </Card>
 
       <Row gutter={[16, 16]}>
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={12} sm={12} lg={6}>
           <Card className="vendor-metric-card vendor-metric-revenue vendor-stagger-item vendor-stagger-2">
             <Statistic
               title="Total Revenue"
@@ -366,7 +366,7 @@ const VendorDashboard = () => {
           </Card>
         </Col>
 
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={12} sm={12} lg={6}>
           <Card className="vendor-metric-card vendor-metric-growth vendor-stagger-item vendor-stagger-3">
             <Statistic
               title="Monthly Growth"
@@ -382,7 +382,7 @@ const VendorDashboard = () => {
           </Card>
         </Col>
 
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={12} sm={12} lg={6}>
           <Card className="vendor-metric-card vendor-metric-orders vendor-stagger-item vendor-stagger-4">
             <Statistic
               title="Orders"
@@ -395,7 +395,7 @@ const VendorDashboard = () => {
           </Card>
         </Col>
 
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={12} sm={12} lg={6}>
           <Card className="vendor-metric-card vendor-metric-products vendor-stagger-item vendor-stagger-5">
             <Statistic
               title="Products"
@@ -410,7 +410,7 @@ const VendorDashboard = () => {
       </Row>
 
       <Row gutter={[16, 16]} style={{ marginTop: "2px" }}>
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={12} sm={12} lg={6}>
           <Card className="vendor-metric-card vendor-metric-balance vendor-stagger-item vendor-stagger-2">
             <Statistic
               title="Total Balance"
@@ -422,7 +422,7 @@ const VendorDashboard = () => {
           </Card>
         </Col>
 
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={12} sm={12} lg={6}>
           <Card className="vendor-metric-card vendor-mini-card vendor-stagger-item vendor-stagger-3">
             <Statistic
               title="Cash"
@@ -433,7 +433,7 @@ const VendorDashboard = () => {
           </Card>
         </Col>
 
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={12} sm={12} lg={6}>
           <Card className="vendor-metric-card vendor-mini-card vendor-stagger-item vendor-stagger-4">
             <Statistic
               title="Bank"
@@ -444,7 +444,7 @@ const VendorDashboard = () => {
           </Card>
         </Col>
 
-        <Col xs={24} sm={12} lg={6}>
+        <Col xs={12} sm={12} lg={6}>
           <Card className="vendor-metric-card vendor-mini-card vendor-stagger-item vendor-stagger-5">
             <Statistic
               title="Mobile Banking"

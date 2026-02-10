@@ -123,16 +123,16 @@ const InvoicesPage = () => {
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
         <Card className={`${cardBaseClass} h-full`}>
           <div className="space-y-1">
             <Typography.Text className="block text-xs text-[var(--app-text-soft)]">
               Total Billed
             </Typography.Text>
-            <Typography.Text className="text-2xl font-bold !text-[var(--app-text)]">
+            <Typography.Text className="block text-2xl font-bold !text-[var(--app-text)] leading-tight">
               {formatCurrency(totalAmount)}
             </Typography.Text>
-            <Typography.Text className="text-xs text-[var(--app-text-soft)]">
+            <Typography.Text className="block text-xs text-[var(--app-text-soft)]">
               Sum of visible invoices
             </Typography.Text>
           </div>
@@ -143,10 +143,10 @@ const InvoicesPage = () => {
             <Typography.Text className="block text-xs text-[var(--app-text-soft)]">
               Total Received
             </Typography.Text>
-            <Typography.Text className="text-2xl font-bold !text-[var(--app-text)]">
+            <Typography.Text className="block text-2xl font-bold !text-[var(--app-text)] leading-tight">
               {formatCurrency(totalReceived)}
             </Typography.Text>
-            <Typography.Text className="text-xs text-[var(--app-text-soft)]">
+            <Typography.Text className="block text-xs text-[var(--app-text-soft)]">
               Amount paid so far
             </Typography.Text>
           </div>
@@ -157,10 +157,10 @@ const InvoicesPage = () => {
             <Typography.Text className="block text-xs text-[var(--app-text-soft)]">
               Outstanding Due
             </Typography.Text>
-            <Typography.Text className="text-2xl font-bold !text-[var(--app-text)]">
+            <Typography.Text className="block text-2xl font-bold !text-[var(--app-text)] leading-tight">
               {formatCurrency(totalDue)}
             </Typography.Text>
-            <Typography.Text className="text-xs text-[var(--app-text-soft)]">
+            <Typography.Text className="block text-xs text-[var(--app-text-soft)]">
               Pending invoice balance
             </Typography.Text>
           </div>

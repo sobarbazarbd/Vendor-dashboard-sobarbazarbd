@@ -5,6 +5,7 @@ import DashboardSidebar from "../components/DashboardSidebar/DashboardSidebar";
 import { Outlet, useLocation } from "react-router-dom";
 import DashboardHeader from "../components/DashboardHeader/DashboardHeader";
 import SidebarDrawer from "../components/DashboardSidebar/SidebarDrawer";
+import MobileBottomNav from "../components/MobileBottomNav/MobileBottomNav";
 
 const { Content } = Layout;
 
@@ -24,6 +25,7 @@ const DashboardLayout: React.FC = () => {
               <div key={location.pathname} className="dashboard-route-view">
                 <Outlet />
               </div>
+              <div className="h-24 lg:hidden" aria-hidden="true" />
             </div>
           </Content>
 
@@ -31,6 +33,7 @@ const DashboardLayout: React.FC = () => {
         </Layout>
       </Layout>
       <SidebarDrawer open={open} setOpen={setOpen} />
+      <MobileBottomNav setOpen={setOpen} />
     </React.Fragment>
   );
 };

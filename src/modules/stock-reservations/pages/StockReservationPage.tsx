@@ -118,16 +118,16 @@ const StockReservationPage = () => {
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
         <Card className={`${cardBaseClass} h-full`}>
           <div className="space-y-1">
             <Typography.Text className="block text-xs text-[var(--app-text-soft)]">
               Total Reservations
             </Typography.Text>
-            <Typography.Text className="text-2xl font-bold !text-[var(--app-text)]">
+            <Typography.Text className="block text-2xl font-bold !text-[var(--app-text)] leading-tight">
               {totalReservations}
             </Typography.Text>
-            <Typography.Text className="text-xs text-[var(--app-text-soft)]">
+            <Typography.Text className="block text-xs text-[var(--app-text-soft)]">
               System reservation records
             </Typography.Text>
           </div>
@@ -138,10 +138,10 @@ const StockReservationPage = () => {
             <Typography.Text className="block text-xs text-[var(--app-text-soft)]">
               Reserved Quantity
             </Typography.Text>
-            <Typography.Text className="text-2xl font-bold !text-[var(--app-text)]">
+            <Typography.Text className="block text-2xl font-bold !text-[var(--app-text)] leading-tight">
               {totalReservedQty}
             </Typography.Text>
-            <Typography.Text className="text-xs text-[var(--app-text-soft)]">
+            <Typography.Text className="block text-xs text-[var(--app-text-soft)]">
               Total locked units in this page
             </Typography.Text>
           </div>
@@ -152,10 +152,10 @@ const StockReservationPage = () => {
             <Typography.Text className="block text-xs text-[var(--app-text-soft)]">
               Expiring in 48 Hours
             </Typography.Text>
-            <Typography.Text className="text-2xl font-bold !text-[var(--app-text)]">
+            <Typography.Text className="block text-2xl font-bold !text-[var(--app-text)] leading-tight">
               {expiringSoonCount}
             </Typography.Text>
-            <Typography.Text className="text-xs text-[var(--app-text-soft)]">
+            <Typography.Text className="block text-xs text-[var(--app-text-soft)]">
               Needs immediate attention
             </Typography.Text>
           </div>
