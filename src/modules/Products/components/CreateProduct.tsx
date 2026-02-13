@@ -40,6 +40,7 @@ import { CommonSelect } from "../../../common/commonField/commonFeild";
 import useDebounce from "../../../hooks/useDebounce";
 import { ATTRIBUTE_KEYS, ATTRIBUTE_VALUES } from "../attributeOptions";
 import BreadCrumb from "../../../common/BreadCrumb/BreadCrumb";
+import { useGetProfileQuery } from "../../Profile/api/profileEndpoint";
 
 const { Title, Text } = Typography;
 const pageCardClass =
@@ -50,6 +51,8 @@ const heroCardClass =
 const CreateProduct = () => {
   const [form] = AntForm.useForm();
   const navigate = useNavigate();
+  const { data: profileData } = useGetProfileQuery();
+  const isAffiliatedStore = profileData?.data?.role?.store?.is_affiliated_store;
 
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 500);
@@ -103,6 +106,7 @@ const CreateProduct = () => {
       name: "",
       sku: "",
       price: "",
+      customer_price: "",
       stock: "",
       is_default: false,
       attributes: [{ key: "", value: "" }],
@@ -118,6 +122,7 @@ const CreateProduct = () => {
         name: "",
         sku: "",
         price: "",
+        customer_price: "",
         stock: "",
         is_default: false,
         attributes: [{ key: "", value: "" }],
@@ -146,7 +151,10 @@ const CreateProduct = () => {
     setVariants(arr);
   };
 
-  const handleVariantImageChange = (variantIndex: number, file: File | null) => {
+  const handleVariantImageChange = (
+    variantIndex: number,
+    file: File | null,
+  ) => {
     const arr = [...variants];
     if (file) {
       arr[variantIndex].image = file;
@@ -179,11 +187,11 @@ const CreateProduct = () => {
     }
 
     const hasValidVariant = variants.some(
-      (v) => v.name && v.sku && Number(v.price) > 0
+      (v) => v.name && v.sku && Number(v.price) > 0,
     );
     if (!hasValidVariant) {
       message.error(
-        "At least one variant must have a valid name, SKU, and price!"
+        "At least one variant must have a valid name, SKU, and price!",
       );
       return;
     }
@@ -198,11 +206,11 @@ const CreateProduct = () => {
       (v) =>
         !v.attributes ||
         v.attributes.length === 0 ||
-        v.attributes.some((a: any) => !a.key || !a.value)
+        v.attributes.some((a: any) => !a.key || !a.value),
     );
     if (invalidVariant) {
       message.error(
-        "Each variant must have at least one attribute with both key and value!"
+        "Each variant must have at least one attribute with both key and value!",
       );
       return;
     }
@@ -229,19 +237,20 @@ const CreateProduct = () => {
     }
 
     const validVariants = variants.filter(
-      (v: any) => v.name && v.sku && Number(v.price) > 0
+      (v: any) => v.name && v.sku && Number(v.price) > 0,
     );
 
     const variantsPayload = validVariants.map((v: any, idx: number) => ({
       name: v.name.trim(),
       sku: v.sku.trim(),
       price: Number(v.price),
+      customer_price: Number(v.customer_price),
       stock: Number(v.stock) || 0,
       is_default: v.is_default || false,
       attributes: Object.fromEntries(
         (v.attributes || [])
           .filter((a: any) => a.key && a.value)
-          .map((a: any) => [a.key.trim(), a.value.trim()])
+          .map((a: any) => [a.key.trim(), a.value.trim()]),
       ),
       has_image: !!v.image,
       image_index: v.image ? idx : null,
@@ -285,21 +294,21 @@ const CreateProduct = () => {
   }, [form]);
 
   const validVariantCount = variants.filter(
-    (v: any) => v.name && v.sku && Number(v.price) > 0
+    (v: any) => v.name && v.sku && Number(v.price) > 0,
   ).length;
 
   const validAttributeVariantCount = variants.filter(
     (v: any) =>
       Array.isArray(v.attributes) &&
       v.attributes.length > 0 &&
-      v.attributes.every((a: any) => a.key && a.value)
+      v.attributes.every((a: any) => a.key && a.value),
   ).length;
 
   const descriptionReady = Boolean(
     shortDescription.trim() &&
-      description &&
-      description !== "<p></p>" &&
-      description.trim() !== ""
+    description &&
+    description !== "<p></p>" &&
+    description.trim() !== "",
   );
 
   const flowChecks = [
@@ -313,12 +322,13 @@ const CreateProduct = () => {
     {
       key: "attributes",
       label: "Attributes",
-      done: validAttributeVariantCount === variants.length && variants.length > 0,
+      done:
+        validAttributeVariantCount === variants.length && variants.length > 0,
     },
   ];
 
   const completionPercent = Math.round(
-    (flowChecks.filter((item) => item.done).length / flowChecks.length) * 100
+    (flowChecks.filter((item) => item.done).length / flowChecks.length) * 100,
   );
 
   return (
@@ -417,7 +427,9 @@ const CreateProduct = () => {
               className={pageCardClass}
               title={
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-semibold">Basic Product Information</span>
+                  <span className="font-semibold">
+                    Basic Product Information
+                  </span>
                   <Text className="text-xs text-[var(--app-text-soft)]">
                     Required fields
                   </Text>
@@ -453,7 +465,9 @@ const CreateProduct = () => {
                   <Form.Item
                     label="Short Description"
                     name="short_description"
-                    help={!shortDescription ? "Short description is required" : ""}
+                    help={
+                      !shortDescription ? "Short description is required" : ""
+                    }
                     validateStatus={!shortDescription ? "error" : ""}
                   >
                     <Input.TextArea
@@ -463,7 +477,7 @@ const CreateProduct = () => {
                       placeholder="Short Description (max 250 chars)"
                       className="!rounded-xl"
                       value={shortDescription}
-                      onChange={e => setShortDescription(e.target.value)}
+                      onChange={(e) => setShortDescription(e.target.value)}
                     />
                   </Form.Item>
                 </Col>
@@ -536,7 +550,7 @@ const CreateProduct = () => {
                         (s: any) => ({
                           label: s.name,
                           value: s.id,
-                        })
+                        }),
                       )}
                     />
                   </Form.Item>
@@ -580,7 +594,10 @@ const CreateProduct = () => {
               }
             >
               {images.length === 0 && (
-                <Text type="secondary" className="rounded-xl border border-dashed border-[var(--app-border)] bg-[var(--app-surface-soft)] px-4 py-2 inline-block">
+                <Text
+                  type="secondary"
+                  className="rounded-xl border border-dashed border-[var(--app-border)] bg-[var(--app-surface-soft)] px-4 py-2 inline-block"
+                >
                   No images added yet. Please add at least one image.
                 </Text>
               )}
@@ -681,260 +698,284 @@ const CreateProduct = () => {
                     }
                   >
                     <Row gutter={[12, 12]}>
-                    <Col xs={24} md={12}>
-                      <Input
-                        placeholder="Variant Name"
-                        className="!rounded-xl"
-                        value={variant.name}
-                        onChange={(e) => {
-                          const arr = [...variants];
-                          arr[index].name = e.target.value;
-                          setVariants(arr);
-                        }}
-                      />
-                    </Col>
-
-                    <Col xs={24} md={12}>
-                      <Input
-                        placeholder="SKU"
-                        className="!rounded-xl"
-                        value={variant.sku}
-                        onChange={(e) => {
-                          const arr = [...variants];
-                          arr[index].sku = e.target.value;
-                          setVariants(arr);
-                        }}
-                      />
-                    </Col>
-
-                    <Col xs={24} md={6}>
-                      <Input
-                        placeholder="Price"
-                        type="number"
-                        addonBefore="Tk"
-                        className="!rounded-xl"
-                        value={variant.price}
-                        onChange={(e) => {
-                          const arr = [...variants];
-                          arr[index].price = e.target.value;
-                          setVariants(arr);
-                        }}
-                      />
-                    </Col>
-
-                    <Col xs={24} md={6}>
-                      <Input
-                        placeholder="Stock"
-                        type="number"
-                        className="!rounded-xl"
-                        value={variant.stock}
-                        onChange={(e) => {
-                          const arr = [...variants];
-                          arr[index].stock = e.target.value;
-                          setVariants(arr);
-                        }}
-                      />
-                    </Col>
-
-                    <Col xs={24} md={6}>
-                      <div className="flex items-center gap-2 rounded-xl border border-[var(--app-border)] bg-white px-3 py-2">
-                        <Switch
-                          checked={variant.is_default}
-                          onChange={(v) => {
+                      <Col xs={24} md={12}>
+                        <Input
+                          placeholder="Variant Name"
+                          className="!rounded-xl"
+                          value={variant.name}
+                          onChange={(e) => {
                             const arr = [...variants];
-                            arr[index].is_default = v;
+                            arr[index].name = e.target.value;
                             setVariants(arr);
                           }}
                         />
-                        <Text className="text-sm text-[var(--app-text-soft)]">
-                          Default Variant
-                        </Text>
-                      </div>
-                    </Col>
+                      </Col>
 
-                    <Col xs={24} md={24}>
-                      <Card
-                        size="small"
-                        className="!rounded-xl !border !border-[var(--app-border)]"
-                        title="Variant Image (Optional)"
-                      >
-                        <Row gutter={16} align="middle">
-                          <Col>
-                            <Upload
-                              listType="picture-card"
-                              maxCount={1}
-                              showUploadList={false}
-                              beforeUpload={(file) => {
-                                handleVariantImageChange(index, file);
-                                return false;
-                              }}
-                            >
-                              {variant.imagePreview ? (
-                                <img
-                                  src={variant.imagePreview}
-                                  alt="variant"
-                                  className="h-full w-full object-cover"
-                                />
-                              ) : (
-                                <div>
-                                  <PlusOutlined />
-                                  <div className="mt-2">Upload</div>
-                                </div>
-                              )}
-                            </Upload>
-                          </Col>
-                          {variant.imagePreview && (
+                      <Col xs={24} md={12}>
+                        <Input
+                          placeholder="SKU"
+                          className="!rounded-xl"
+                          value={variant.sku}
+                          onChange={(e) => {
+                            const arr = [...variants];
+                            arr[index].sku = e.target.value;
+                            setVariants(arr);
+                          }}
+                        />
+                      </Col>
+
+                      <Col xs={24} md={6}>
+                        <Input
+                          placeholder={
+                            isAffiliatedStore ? "Price for Wholesale" : "Price"
+                          }
+                          type="number"
+                          addonBefore="Tk"
+                          className="!rounded-xl"
+                          value={variant.price}
+                          onChange={(e) => {
+                            const arr = [...variants];
+                            arr[index].price = e.target.value;
+                            setVariants(arr);
+                          }}
+                        />
+                      </Col>
+
+                      {isAffiliatedStore && (
+                        <Col xs={24} md={6}>
+                          <Input
+                            placeholder="Price for Customer"
+                            type="number"
+                            addonBefore="Tk"
+                            className="!rounded-xl"
+                            value={variant.customer_price}
+                            onChange={(e) => {
+                              const arr = [...variants];
+                              arr[index].customer_price = e.target.value;
+                              setVariants(arr);
+                            }}
+                          />
+                        </Col>
+                      )}
+
+                      <Col xs={24} md={6}>
+                        <Input
+                          placeholder="Stock"
+                          type="number"
+                          className="!rounded-xl"
+                          value={variant.stock}
+                          onChange={(e) => {
+                            const arr = [...variants];
+                            arr[index].stock = e.target.value;
+                            setVariants(arr);
+                          }}
+                        />
+                      </Col>
+
+                      <Col xs={24} md={6}>
+                        <div className="flex items-center gap-2 rounded-xl border border-[var(--app-border)] bg-white px-3 py-2">
+                          <Switch
+                            checked={variant.is_default}
+                            onChange={(v) => {
+                              const arr = [...variants];
+                              arr[index].is_default = v;
+                              setVariants(arr);
+                            }}
+                          />
+                          <Text className="text-sm text-[var(--app-text-soft)]">
+                            Default Variant
+                          </Text>
+                        </div>
+                      </Col>
+
+                      <Col xs={24} md={24}>
+                        <Card
+                          size="small"
+                          className="!rounded-xl !border !border-[var(--app-border)]"
+                          title="Variant Image (Optional)"
+                        >
+                          <Row gutter={16} align="middle">
                             <Col>
-                              <Popconfirm
-                                title="Remove variant image?"
-                                okText="Remove"
-                                cancelText="Cancel"
-                                okButtonProps={{
-                                  className:
-                                    "!bg-[#279e5a] !border-[#279e5a] hover:!bg-[#1f8a4e] hover:!border-[#1f8a4e]",
+                              <Upload
+                                listType="picture-card"
+                                maxCount={1}
+                                showUploadList={false}
+                                beforeUpload={(file) => {
+                                  handleVariantImageChange(index, file);
+                                  return false;
                                 }}
-                                onConfirm={() =>
-                                  handleVariantImageChange(index, null)
-                                }
                               >
-                                <Button
-                                  danger
-                                  size="small"
-                                  className="!rounded-lg"
+                                {variant.imagePreview ? (
+                                  <img
+                                    src={variant.imagePreview}
+                                    alt="variant"
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  <div>
+                                    <PlusOutlined />
+                                    <div className="mt-2">Upload</div>
+                                  </div>
+                                )}
+                              </Upload>
+                            </Col>
+                            {variant.imagePreview && (
+                              <Col>
+                                <Popconfirm
+                                  title="Remove variant image?"
+                                  okText="Remove"
+                                  cancelText="Cancel"
+                                  okButtonProps={{
+                                    className:
+                                      "!bg-[#279e5a] !border-[#279e5a] hover:!bg-[#1f8a4e] hover:!border-[#1f8a4e]",
+                                  }}
+                                  onConfirm={() =>
+                                    handleVariantImageChange(index, null)
+                                  }
                                 >
-                                  Remove Image
-                                </Button>
-                              </Popconfirm>
-                            </Col>
-                          )}
-                        </Row>
-                      </Card>
-                    </Col>
-
-                    <Col xs={24}>
-                      <Card
-                        size="small"
-                        className="!rounded-xl !border !border-[var(--app-border)]"
-                        title="Attributes"
-                        extra={
-                          <Button
-                            size="small"
-                            icon={<PlusOutlined />}
-                            className="!rounded-lg"
-                            onClick={() => addAttribute(index)}
-                          >
-                            Add Attribute
-                          </Button>
-                        }
-                      >
-                        {variant.attributes.map((attr: any, aIndex: number) => (
-                          <Row
-                            gutter={12}
-                            key={aIndex}
-                            style={{ marginBottom: 10 }}
-                          >
-                            <Col xs={24} sm={10}>
-                              <Select
-                                showSearch
-                                allowClear
-                                placeholder="Attribute Key"
-                                value={attr.key}
-                                className="w-full"
-                                filterOption={(input, option) =>
-                                  (option?.value ?? "")
-                                    .toLowerCase()
-                                    .includes(input.toLowerCase())
-                                }
-                                options={ATTRIBUTE_KEYS.map((k) => ({
-                                  value: k,
-                                  label: k,
-                                }))}
-                                onChange={(value) => {
-                                  const arr = [...variants];
-                                  arr[index].attributes[aIndex].key = value;
-                                  setVariants(arr);
-                                }}
-                                onBlur={(e) => {
-                                  // Allow custom input on blur
-                                  const arr = [...variants];
-                                  const inputValue = (
-                                    e.target as HTMLInputElement
-                                  ).value;
-                                  if (
-                                    !arr[index].attributes[aIndex].key &&
-                                    inputValue
-                                  ) {
-                                    arr[index].attributes[aIndex].key =
-                                      inputValue;
-                                    setVariants(arr);
-                                  }
-                                }}
-                              />
-                            </Col>
-                            <Col xs={24} sm={10}>
-                              <Select
-                                showSearch
-                                allowClear
-                                placeholder="Attribute Value"
-                                value={attr.value}
-                                className="w-full"
-                                filterOption={(input, option) =>
-                                  (option?.value ?? "")
-                                    .toLowerCase()
-                                    .includes(input.toLowerCase())
-                                }
-                                options={ATTRIBUTE_VALUES.map((v) => ({
-                                  value: v,
-                                  label: v,
-                                }))}
-                                onChange={(value) => {
-                                  const arr = [...variants];
-                                  arr[index].attributes[aIndex].value = value;
-                                  setVariants(arr);
-                                }}
-                                onBlur={(e) => {
-                                  // Allow custom input on blur
-                                  const arr = [...variants];
-                                  const inputValue = (
-                                    e.target as HTMLInputElement
-                                  ).value;
-                                  if (
-                                    !arr[index].attributes[aIndex].value &&
-                                    inputValue
-                                  ) {
-                                    arr[index].attributes[aIndex].value =
-                                      inputValue;
-                                    setVariants(arr);
-                                  }
-                                }}
-                              />
-                            </Col>
-                            <Col xs={24} sm={4}>
-                              <Popconfirm
-                                title="Remove this attribute?"
-                                okText="Remove"
-                                cancelText="Cancel"
-                                okButtonProps={{
-                                  className:
-                                    "!bg-[#279e5a] !border-[#279e5a] hover:!bg-[#1f8a4e] hover:!border-[#1f8a4e]",
-                                }}
-                                onConfirm={() => removeAttribute(index, aIndex)}
-                                disabled={variant.attributes.length === 1}
-                              >
-                                <Button
-                                  danger
-                                  block
-                                  icon={<DeleteOutlined />}
-                                  className="!rounded-lg"
-                                  disabled={variant.attributes.length === 1}
-                                />
-                              </Popconfirm>
-                            </Col>
+                                  <Button
+                                    danger
+                                    size="small"
+                                    className="!rounded-lg"
+                                  >
+                                    Remove Image
+                                  </Button>
+                                </Popconfirm>
+                              </Col>
+                            )}
                           </Row>
-                        ))}
-                      </Card>
-                    </Col>
-                  </Row>
+                        </Card>
+                      </Col>
+
+                      <Col xs={24}>
+                        <Card
+                          size="small"
+                          className="!rounded-xl !border !border-[var(--app-border)]"
+                          title="Attributes"
+                          extra={
+                            <Button
+                              size="small"
+                              icon={<PlusOutlined />}
+                              className="!rounded-lg"
+                              onClick={() => addAttribute(index)}
+                            >
+                              Add Attribute
+                            </Button>
+                          }
+                        >
+                          {variant.attributes.map(
+                            (attr: any, aIndex: number) => (
+                              <Row
+                                gutter={12}
+                                key={aIndex}
+                                style={{ marginBottom: 10 }}
+                              >
+                                <Col xs={24} sm={10}>
+                                  <Select
+                                    showSearch
+                                    allowClear
+                                    placeholder="Attribute Key"
+                                    value={attr.key}
+                                    className="w-full"
+                                    filterOption={(input, option) =>
+                                      (option?.value ?? "")
+                                        .toLowerCase()
+                                        .includes(input.toLowerCase())
+                                    }
+                                    options={ATTRIBUTE_KEYS.map((k) => ({
+                                      value: k,
+                                      label: k,
+                                    }))}
+                                    onChange={(value) => {
+                                      const arr = [...variants];
+                                      arr[index].attributes[aIndex].key = value;
+                                      setVariants(arr);
+                                    }}
+                                    onBlur={(e) => {
+                                      // Allow custom input on blur
+                                      const arr = [...variants];
+                                      const inputValue = (
+                                        e.target as HTMLInputElement
+                                      ).value;
+                                      if (
+                                        !arr[index].attributes[aIndex].key &&
+                                        inputValue
+                                      ) {
+                                        arr[index].attributes[aIndex].key =
+                                          inputValue;
+                                        setVariants(arr);
+                                      }
+                                    }}
+                                  />
+                                </Col>
+                                <Col xs={24} sm={10}>
+                                  <Select
+                                    showSearch
+                                    allowClear
+                                    placeholder="Attribute Value"
+                                    value={attr.value}
+                                    className="w-full"
+                                    filterOption={(input, option) =>
+                                      (option?.value ?? "")
+                                        .toLowerCase()
+                                        .includes(input.toLowerCase())
+                                    }
+                                    options={ATTRIBUTE_VALUES.map((v) => ({
+                                      value: v,
+                                      label: v,
+                                    }))}
+                                    onChange={(value) => {
+                                      const arr = [...variants];
+                                      arr[index].attributes[aIndex].value =
+                                        value;
+                                      setVariants(arr);
+                                    }}
+                                    onBlur={(e) => {
+                                      // Allow custom input on blur
+                                      const arr = [...variants];
+                                      const inputValue = (
+                                        e.target as HTMLInputElement
+                                      ).value;
+                                      if (
+                                        !arr[index].attributes[aIndex].value &&
+                                        inputValue
+                                      ) {
+                                        arr[index].attributes[aIndex].value =
+                                          inputValue;
+                                        setVariants(arr);
+                                      }
+                                    }}
+                                  />
+                                </Col>
+                                <Col xs={24} sm={4}>
+                                  <Popconfirm
+                                    title="Remove this attribute?"
+                                    okText="Remove"
+                                    cancelText="Cancel"
+                                    okButtonProps={{
+                                      className:
+                                        "!bg-[#279e5a] !border-[#279e5a] hover:!bg-[#1f8a4e] hover:!border-[#1f8a4e]",
+                                    }}
+                                    onConfirm={() =>
+                                      removeAttribute(index, aIndex)
+                                    }
+                                    disabled={variant.attributes.length === 1}
+                                  >
+                                    <Button
+                                      danger
+                                      block
+                                      icon={<DeleteOutlined />}
+                                      className="!rounded-lg"
+                                      disabled={variant.attributes.length === 1}
+                                    />
+                                  </Popconfirm>
+                                </Col>
+                              </Row>
+                            ),
+                          )}
+                        </Card>
+                      </Col>
+                    </Row>
                   </Card>
                 ))}
               </div>

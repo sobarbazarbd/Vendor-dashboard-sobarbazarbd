@@ -156,6 +156,11 @@ const ProductView = () => {
               render: (p) => `৳ ${p}`,
             },
             {
+              title: "Customer Price",
+              dataIndex: "customer_price",
+              render: (p) => `৳ ${p}`,
+            },
+            {
               title: "Stock",
               dataIndex: "stock",
             },

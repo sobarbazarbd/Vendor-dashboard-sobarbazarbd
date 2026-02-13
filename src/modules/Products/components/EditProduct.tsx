@@ -31,6 +31,7 @@ import {
 import { CommonSelect } from "../../../common/commonField/commonFeild";
 import useDebounce from "../../../hooks/useDebounce";
 import { ATTRIBUTE_KEYS, ATTRIBUTE_VALUES } from "../attributeOptions";
+import { useGetProfileQuery } from "../../Profile/api/profileEndpoint";
 
 const { Title, Text } = Typography;
 
@@ -38,6 +39,8 @@ const EditProduct = () => {
   const { productId } = useParams();
   const [form] = AntForm.useForm();
   const navigate = useNavigate();
+  const { data: profileData } = useGetProfileQuery();
+  const isAffiliatedStore = profileData?.data?.role?.store?.is_affiliated_store;
 
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 500);
@@ -88,6 +91,7 @@ const EditProduct = () => {
           name: v.name,
           sku: v.sku,
           price: v.price,
+          customer_price: v.customer_price,
           stock: v.stock,
           is_default: v.is_default,
           attributes: v.attributes
@@ -107,6 +111,7 @@ const EditProduct = () => {
             name: "",
             sku: "",
             price: "",
+            customer_price: "",
             stock: "",
             is_default: false,
             attributes: [{ key: "", value: "" }],
@@ -162,6 +167,7 @@ const EditProduct = () => {
         name: "",
         sku: "",
         price: "",
+        customer_price: "",
         stock: "",
         is_default: false,
         attributes: [{ key: "", value: "" }],
@@ -194,7 +200,10 @@ const EditProduct = () => {
     setVariants(arr);
   };
 
-  const handleVariantImageChange = (variantIndex: number, file: File | null) => {
+  const handleVariantImageChange = (
+    variantIndex: number,
+    file: File | null,
+  ) => {
     const arr = [...variants];
     if (file) {
       arr[variantIndex].image = file;
@@ -235,11 +244,11 @@ const EditProduct = () => {
     }
 
     const hasValidVariant = variants.some(
-      (v) => v.name && v.sku && Number(v.price) > 0
+      (v) => v.name && v.sku && Number(v.price) > 0,
     );
     if (!hasValidVariant) {
       message.error(
-        "At least one variant must have a valid name, SKU, and price!"
+        "At least one variant must have a valid name, SKU, and price!",
       );
       return;
     }
@@ -249,11 +258,11 @@ const EditProduct = () => {
       (v) =>
         !v.attributes ||
         v.attributes.length === 0 ||
-        v.attributes.some((a: any) => !a.key || !a.value)
+        v.attributes.some((a: any) => !a.key || !a.value),
     );
     if (invalidVariant) {
       message.error(
-        "Each variant must have at least one attribute with both key and value!"
+        "Each variant must have at least one attribute with both key and value!",
       );
       return;
     }
@@ -286,7 +295,7 @@ const EditProduct = () => {
 
     // Prepare variants payload
     const validVariants = variants.filter(
-      (v: any) => v.name && v.sku && Number(v.price) > 0
+      (v: any) => v.name && v.sku && Number(v.price) > 0,
     );
 
     let variantImageIndex = 0;
@@ -295,12 +304,13 @@ const EditProduct = () => {
         name: v.name.trim(),
         sku: v.sku.trim(),
         price: Number(v.price),
+        customer_price: Number(v.customer_price),
         stock: Number(v.stock) || 0,
         is_default: v.is_default || false,
         attributes: Object.fromEntries(
           (v.attributes || [])
             .filter((a: any) => a.key && a.value)
-            .map((a: any) => [a.key.trim(), a.value.trim()])
+            .map((a: any) => [a.key.trim(), a.value.trim()]),
         ),
         remove_image: v.removeExistingImage || false,
         has_new_image: !!v.image,
@@ -404,7 +414,9 @@ const EditProduct = () => {
                   <Form.Item
                     label="Short Description"
                     name="short_description"
-                    help={!shortDescription ? "Short description is required" : ""}
+                    help={
+                      !shortDescription ? "Short description is required" : ""
+                    }
                     validateStatus={!shortDescription ? "error" : ""}
                   >
                     <Input.TextArea
@@ -486,7 +498,7 @@ const EditProduct = () => {
                         (s: any) => ({
                           label: s.name,
                           value: s.id,
-                        })
+                        }),
                       )}
                     />
                   </Form.Item>
@@ -661,7 +673,9 @@ const EditProduct = () => {
 
                     <Col xs={24} md={6}>
                       <Input
-                        placeholder="Price"
+                        placeholder={
+                          isAffiliatedStore ? "Price for Wholesale" : "Price"
+                        }
                         type="number"
                         value={variant.price}
                         onChange={(e) => {
@@ -672,6 +686,20 @@ const EditProduct = () => {
                       />
                     </Col>
 
+                    {isAffiliatedStore && (
+                      <Col xs={24} md={6}>
+                        <Input
+                          placeholder="Price for Customer"
+                          type="number"
+                          value={variant.customer_price}
+                          onChange={(e) => {
+                            const arr = [...variants];
+                            arr[index].customer_price = e.target.value;
+                            setVariants(arr);
+                          }}
+                        />
+                      </Col>
+                    )}
                     <Col xs={24} md={6}>
                       <Input
                         placeholder="Stock"
@@ -714,13 +742,21 @@ const EditProduct = () => {
                                 <img
                                   src={variant.imagePreview}
                                   alt="variant"
-                                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                  style={{
+                                    width: "100%",
+                                    height: "100%",
+                                    objectFit: "cover",
+                                  }}
                                 />
                               ) : variant.existingImage ? (
                                 <img
                                   src={variant.existingImage}
                                   alt="variant"
-                                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                  style={{
+                                    width: "100%",
+                                    height: "100%",
+                                    objectFit: "cover",
+                                  }}
                                 />
                               ) : (
                                 <div>
