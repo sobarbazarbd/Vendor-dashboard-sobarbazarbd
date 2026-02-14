@@ -14,7 +14,7 @@ If you are developing a production application, we recommend updating the config
 - Configure the top-level `parserOptions` property like this:,nijh
 
 ```js
-export default { l
+export default { l kkk
   // other rules...
   parserOptions: {
     ecmaVersion: "latest",
