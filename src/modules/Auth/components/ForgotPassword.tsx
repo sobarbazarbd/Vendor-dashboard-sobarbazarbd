@@ -12,6 +12,14 @@ import { RootState } from "../../../app/store";
 import { clearMessage, loggedIn } from "../../../app/features/authSlice";
 import { useChangePasswordMutation } from "../api/loginEndpoint";
 
+type ForgotPasswordFormValues = ForgotPasswordTypes & {
+  voterIdCard: string;
+  nidVerification: string;
+  tinVerification: string;
+  binVerification: string;
+  tradeLicense: string;
+};
+
 const ForgotPassword: React.FC = () => {
   const [changePassword, { isLoading }] = useChangePasswordMutation();
   const { message } = useSelector((state: RootState) => state.auth);
@@ -27,7 +35,7 @@ const ForgotPassword: React.FC = () => {
 
   console.log("pppp", token);
 
-  const onFinish = async (values: ForgotPasswordTypes) => {
+  const onFinish = async (values: ForgotPasswordFormValues) => {
     const result = await changePassword({
       newPassword: values.newPassword,
       confirmNewPassword: values.confirmNewPassword,
@@ -77,7 +85,91 @@ const ForgotPassword: React.FC = () => {
                 buttonLabel="Reset Password"
                 isLoading={isLoading}
               >
-                <Form.Item<ForgotPasswordTypes>
+                <Typography.Text
+                  style={{ display: "block", fontWeight: 600, marginBottom: "6px" }}
+                >
+                  KYC Verification
+                </Typography.Text>
+                <Typography.Text
+                  type="secondary"
+                  style={{ display: "block", marginBottom: "14px" }}
+                >
+                  Fill the details below to complete account verification.
+                </Typography.Text>
+
+                <Row gutter={[12, 0]}>
+                  <Col xs={24} sm={12}>
+                    <Form.Item<ForgotPasswordFormValues>
+                      label="Voter ID Card"
+                      name="voterIdCard"
+                      rules={[{ required: true, message: "Please enter Voter ID Card" }]}
+                    >
+                      <Input
+                        onFocus={handleOnFocus}
+                        prefix={<Iconify name="mdi:card-account-details-outline" />}
+                        placeholder="Enter voter ID card number"
+                      />
+                    </Form.Item>
+                  </Col>
+
+                  <Col xs={24} sm={12}>
+                    <Form.Item<ForgotPasswordFormValues>
+                      label="NID Verification"
+                      name="nidVerification"
+                      rules={[{ required: true, message: "Please enter NID number" }]}
+                    >
+                      <Input
+                        onFocus={handleOnFocus}
+                        prefix={<Iconify name="mdi:identifier" />}
+                        placeholder="Enter NID number"
+                      />
+                    </Form.Item>
+                  </Col>
+
+                  <Col xs={24} sm={12}>
+                    <Form.Item<ForgotPasswordFormValues>
+                      label="TIN Verification"
+                      name="tinVerification"
+                      rules={[{ required: true, message: "Please enter TIN number" }]}
+                    >
+                      <Input
+                        onFocus={handleOnFocus}
+                        prefix={<Iconify name="mdi:file-certificate-outline" />}
+                        placeholder="Enter TIN number"
+                      />
+                    </Form.Item>
+                  </Col>
+
+                  <Col xs={24} sm={12}>
+                    <Form.Item<ForgotPasswordFormValues>
+                      label="BIN Verification"
+                      name="binVerification"
+                      rules={[{ required: true, message: "Please enter BIN number" }]}
+                    >
+                      <Input
+                        onFocus={handleOnFocus}
+                        prefix={<Iconify name="mdi:barcode-scan" />}
+                        placeholder="Enter BIN number"
+                      />
+                    </Form.Item>
+                  </Col>
+
+                  <Col span={24}>
+                    <Form.Item<ForgotPasswordFormValues>
+                      label="Trade License"
+                      name="tradeLicense"
+                      rules={[{ required: true, message: "Please enter Trade License" }]}
+                    >
+                      <Input
+                        onFocus={handleOnFocus}
+                        prefix={<Iconify name="mdi:briefcase-outline" />}
+                        placeholder="Enter trade license number"
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>
+
+                <Form.Item<ForgotPasswordFormValues>
                   label="New Password"
                   name="newPassword"
                   rules={[{ required: true }, { validator: passwordValidator }]}
@@ -88,7 +180,7 @@ const ForgotPassword: React.FC = () => {
                     placeholder="********"
                   />
                 </Form.Item>
-                <Form.Item<ForgotPasswordTypes>
+                <Form.Item<ForgotPasswordFormValues>
                   label="Confirm Password"
                   name="confirmNewPassword"
                   rules={[{ required: true }, { validator: passwordValidator }]}

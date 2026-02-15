@@ -29,6 +29,15 @@ export interface IStoreSettings {
   longitude: number | null;
   is_affiliated_store: boolean;
   trade_license: string | null;
+  voter_id_card?: string | null;
+  nid_verification?: string | null;
+  tin_verification?: string | null;
+  bin_verification?: string | null;
+  voter_id_card_file?: string | null;
+  nid_verification_file?: string | null;
+  tin_verification_file?: string | null;
+  bin_verification_file?: string | null;
+  trade_license_file?: string | null;
   contract_paper: string | null;
   other_document: string | null;
   return_policy: string;

@@ -251,9 +251,42 @@ const StoreProfilePage = () => {
             }
             className={cardBaseClass}
           >
+            <InfoRow label="Voter ID Card" value={getText(store.voter_id_card)} />
+            <InfoRow
+              label="NID Verification"
+              value={getText(store.nid_verification)}
+            />
+            <InfoRow
+              label="TIN Verification"
+              value={getText(store.tin_verification || store.tax_id)}
+            />
+            <InfoRow
+              label="BIN Verification"
+              value={getText(store.bin_verification)}
+            />
+            <InfoRow
+              label="Voter ID File"
+              value={<LinkValue url={store.voter_id_card_file} />}
+            />
+            <InfoRow
+              label="NID File"
+              value={<LinkValue url={store.nid_verification_file} />}
+            />
+            <InfoRow
+              label="TIN File"
+              value={<LinkValue url={store.tin_verification_file} />}
+            />
+            <InfoRow
+              label="BIN File"
+              value={<LinkValue url={store.bin_verification_file} />}
+            />
             <InfoRow label="Tax ID" value={getText(store.tax_id)} />
             <InfoRow label="Founder" value={getText(store.founder)} />
             <InfoRow label="Trade License" value={getText(store.trade_license)} />
+            <InfoRow
+              label="Trade License File"
+              value={<LinkValue url={store.trade_license_file} />}
+            />
             <InfoRow
               label="Return Policy"
               value={getText(store.return_policy)}

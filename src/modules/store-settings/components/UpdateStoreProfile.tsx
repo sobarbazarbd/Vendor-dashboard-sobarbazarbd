@@ -11,12 +11,13 @@ import {
   Divider,
   Modal,
   Select,
+  Button,
 } from "antd";
 import { useEffect, useState } from "react";
 import { Form } from "../../../common/CommonAnt";
 import { Form as AntForm } from "antd";
 import dayjs from "dayjs";
-import { UserOutlined } from "@ant-design/icons";
+import { UploadOutlined, UserOutlined } from "@ant-design/icons";
 import {
   useGetStoreSettingsQuery,
   useUpdateStoreSettingsMutation,
@@ -35,6 +36,52 @@ const weekdays = [
   "Thursday",
   "Friday",
 ];
+
+const kycFields = [
+  {
+    numberKey: "voter_id_card",
+    numberLabel: "Voter ID Card",
+    numberPlaceholder: "Enter voter ID card number",
+    fileKey: "voter_id_card_file",
+    fileLabel: "Voter ID Upload",
+    uploadButtonText: "Upload Voter ID Photo",
+  },
+  {
+    numberKey: "nid_verification",
+    numberLabel: "NID Verification",
+    numberPlaceholder: "Enter NID number",
+    fileKey: "nid_verification_file",
+    fileLabel: "NID Upload",
+    uploadButtonText: "Upload NID Photo",
+  },
+  {
+    numberKey: "tin_verification",
+    numberLabel: "TIN Verification",
+    numberPlaceholder: "Enter TIN number",
+    fileKey: "tin_verification_file",
+    fileLabel: "TIN Upload",
+    uploadButtonText: "Upload TIN File",
+  },
+  {
+    numberKey: "bin_verification",
+    numberLabel: "BIN Verification",
+    numberPlaceholder: "Enter BIN number",
+    fileKey: "bin_verification_file",
+    fileLabel: "BIN Upload",
+    uploadButtonText: "Upload BIN File",
+  },
+  {
+    numberKey: "trade_license",
+    numberLabel: "Trade License",
+    numberPlaceholder: "Enter trade license number",
+    fileKey: "trade_license_file",
+    fileLabel: "Trade License Upload",
+    uploadButtonText: "Upload Trade License",
+  },
+] as const;
+
+const kycTextKeys = kycFields.map((field) => field.numberKey);
+const kycFileKeys = kycFields.map((field) => field.fileKey);
 
 const UpdateStoreProfile = () => {
   const { data } = useGetStoreSettingsQuery<any>({});
@@ -59,6 +106,17 @@ const UpdateStoreProfile = () => {
       if (normalized[key] === null) normalized[key] = "";
     });
 
+    const toUploadFileList = (url: string | undefined, name: string) =>
+      typeof url === "string" && url
+        ? [
+            {
+              uid: `-${name}`,
+              url,
+              name,
+            },
+          ]
+        : [];
+
     const initialLogo =
       typeof store.logo === "string" && store.logo
         ? [
@@ -71,10 +129,48 @@ const UpdateStoreProfile = () => {
           ]
         : [];
 
+    const initialKycFileFields = {
+      voter_id_card_file: toUploadFileList(
+        store.voter_id_card_file,
+        "Voter ID Document"
+      ),
+      nid_verification_file: toUploadFileList(
+        store.nid_verification_file,
+        "NID Document"
+      ),
+      tin_verification_file: toUploadFileList(
+        store.tin_verification_file,
+        "TIN Document"
+      ),
+      bin_verification_file: toUploadFileList(
+        store.bin_verification_file,
+        "BIN Document"
+      ),
+      trade_license_file: toUploadFileList(
+        store.trade_license_file,
+        "Trade License Document"
+      ),
+    };
+
+    const hasAnyKycData = Boolean(
+      store.voter_id_card ||
+        store.nid_verification ||
+        store.tin_verification ||
+        store.bin_verification ||
+        store.trade_license ||
+        store.voter_id_card_file ||
+        store.nid_verification_file ||
+        store.tin_verification_file ||
+        store.bin_verification_file ||
+        store.trade_license_file
+    );
+
     setImageFileList(initialLogo);
 
     form.setFieldsValue({
       ...normalized,
+      ...initialKycFileFields,
+      has_kyc_documents: hasAnyKycData,
       established_date: store.established_date
         ? dayjs(store.established_date)
         : undefined,
@@ -92,23 +188,52 @@ const UpdateStoreProfile = () => {
     setPreviewVisible(true);
   };
 
+  const getUploadFileList = (e: any) => (Array.isArray(e) ? e : e?.fileList);
+
   const onFinish = (values: any) => {
     const formData = new FormData();
+    const hasKycDocuments = Boolean(values.has_kyc_documents);
 
     Object.entries(values).forEach(([key, value]: any) => {
-      if (key === "logo" && Array.isArray(value)) {
-        value.forEach((file) => {
-          if (file?.originFileObj instanceof File) {
-            formData.append("logo", file.originFileObj);
-          }
-        });
-      } else if (key === "established_date" && value) {
+      if (key === "has_kyc_documents") {
+        return;
+      }
+
+      if (
+        !hasKycDocuments &&
+        (kycTextKeys.includes(key as (typeof kycTextKeys)[number]) ||
+          kycFileKeys.includes(key as (typeof kycFileKeys)[number]))
+      ) {
+        return;
+      }
+
+      if (Array.isArray(value)) {
+        const looksLikeUploadFileList = value.some(
+          (item) =>
+            typeof item === "object" &&
+            item !== null &&
+            ("uid" in item || "originFileObj" in item)
+        );
+
+        if (looksLikeUploadFileList) {
+          value.forEach((file) => {
+            if (file?.originFileObj instanceof File) {
+              formData.append(key, file.originFileObj);
+            }
+          });
+
+          return;
+        }
+
+        value.forEach((v) => formData.append(key, v));
+        return;
+      }
+
+      if (key === "established_date" && value) {
         formData.append(key, dayjs(value).format("YYYY-MM-DD"));
       } else if (key === "is_affiliated_store") {
         formData.append(key, value ? "true" : "false");
-      } else if (Array.isArray(value)) {
-        value.forEach((v) => formData.append(key, v));
-      } else {
+      } else if (value !== undefined && value !== null) {
         formData.append(key, value);
       }
     });
@@ -260,6 +385,127 @@ const UpdateStoreProfile = () => {
                   </Form.Item>
                 </Col>
               </Row>
+            </Card>
+          </Col>
+
+          {/* KYC */}
+          <Col xs={24}>
+            <Card title="KYC Verification">
+              <Row gutter={[14, 14]}>
+                <Col xs={24} md={12}>
+                  <Form.Item
+                    name="has_kyc_documents"
+                    label="Do you have KYC documents?"
+                    rules={[{ required: true, message: "Please select an option" }]}
+                  >
+                    <Select
+                      size="large"
+                      placeholder="Select"
+                      options={[
+                        {
+                          label: "Yes, I have KYC documents",
+                          value: true,
+                        },
+                        {
+                          label: "No, I do not have them now",
+                          value: false,
+                        },
+                      ]}
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <AntForm.Item
+                noStyle
+                shouldUpdate={(prev, curr) =>
+                  prev.has_kyc_documents !== curr.has_kyc_documents
+                }
+              >
+                {({ getFieldValue }) => {
+                  const hasKycDocuments = Boolean(getFieldValue("has_kyc_documents"));
+
+                  if (!hasKycDocuments) {
+                    return (
+                      <Text type="secondary" className="block">
+                        KYC is optional for now. You can skip this section and
+                        update it later from profile.
+                      </Text>
+                    );
+                  }
+
+                  return (
+                    <>
+                      <Text type="secondary" className="mb-3 block">
+                        Since you selected KYC available, number and file are both
+                        required for each verification.
+                      </Text>
+
+                      <Row gutter={[14, 14]}>
+                        {kycFields.map((field) => (
+                          <Col xs={24} md={12} lg={8} key={field.numberKey}>
+                            <div className="h-full rounded-xl border border-[#d4e9dd] bg-[#f8fffb] p-3">
+                              <Form.Item
+                                name={field.numberKey}
+                                label={field.numberLabel}
+                                className="!mb-3"
+                                rules={[
+                                  {
+                                    required: true,
+                                    message: `Please enter ${field.numberLabel}`,
+                                  },
+                                ]}
+                              >
+                                <Input
+                                  size="large"
+                                  placeholder={field.numberPlaceholder}
+                                />
+                              </Form.Item>
+
+                              <Form.Item
+                                name={field.fileKey}
+                                label={field.fileLabel}
+                                valuePropName="fileList"
+                                getValueFromEvent={getUploadFileList}
+                                className="!mb-2"
+                                rules={[
+                                  {
+                                    validator: (_, value) => {
+                                      if (Array.isArray(value) && value.length > 0) {
+                                        return Promise.resolve();
+                                      }
+                                      return Promise.reject(
+                                        new Error(
+                                          `Please upload ${field.numberLabel} file`
+                                        )
+                                      );
+                                    },
+                                  },
+                                ]}
+                              >
+                                <Upload
+                                  beforeUpload={() => false}
+                                  maxCount={1}
+                                  accept=".pdf,.jpg,.jpeg,.png"
+                                  listType="picture"
+                                >
+                                  <Button icon={<UploadOutlined />}>
+                                    {field.uploadButtonText}
+                                  </Button>
+                                </Upload>
+                              </Form.Item>
+
+                              <Text type="secondary" className="!text-xs">
+                                Accepted: JPG, PNG, PDF
+                              </Text>
+                            </div>
+                          </Col>
+                        ))}
+                      </Row>
+                    </>
+                  );
+                }}
+              </AntForm.Item>
             </Card>
           </Col>
 
