@@ -46,4 +46,17 @@ export interface IStoreSettings {
   attendance_api_key: string | null;
   attendance_device_id: string | null;
   weekend_days: Weekday[];
+
+  // Steadfast courier
+  steadfast_api_key?: string | null;
+  steadfast_api_secret?: string | null;
+  steadfast_enabled?: boolean;
+
+  // Pathao courier
+  pathao_client_id?: string | null;
+  pathao_client_secret?: string | null;
+  pathao_username?: string | null;
+  pathao_password?: string | null;
+  pathao_store_id?: string | null;
+  pathao_enabled?: boolean;
 }

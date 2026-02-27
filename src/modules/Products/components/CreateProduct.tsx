@@ -222,6 +222,10 @@ const CreateProduct = () => {
     formData.append("description", description);
     formData.append("sku", values.sku || "");
     formData.append("is_active", values.is_active ? "true" : "false");
+    formData.append(
+      "is_available_for_affiliation",
+      values.is_available_for_affiliation !== false ? "true" : "false"
+    );
 
     if (values.subcategories && values.subcategories.length > 0) {
       values.subcategories.forEach((id: number) => {
@@ -290,7 +294,7 @@ const CreateProduct = () => {
   }, [isSuccess, navigate]);
 
   useEffect(() => {
-    form.setFieldsValue({ is_active: true });
+    form.setFieldsValue({ is_active: true, is_available_for_affiliation: true });
   }, [form]);
 
   const validVariantCount = variants.filter(
@@ -574,6 +578,27 @@ const CreateProduct = () => {
                     </div>
                   </Form.Item>
                 </Col>
+
+                {isAffiliatedStore && (
+                  <Col xs={24}>
+                    <Form.Item
+                      label="Affiliated Customer Listing"
+                      name="is_available_for_affiliation"
+                      valuePropName="checked"
+                      className="mb-0"
+                    >
+                      <div className="flex items-center gap-2 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-soft)] px-3 py-2">
+                        <Switch
+                          checkedChildren="Enabled"
+                          unCheckedChildren="Disabled"
+                        />
+                        <Text className="text-sm text-[var(--app-text-soft)]">
+                          Make this product available for customers in the affiliated shop
+                        </Text>
+                      </div>
+                    </Form.Item>
+                  </Col>
+                )}
               </Row>
             </Card>
           </Col>

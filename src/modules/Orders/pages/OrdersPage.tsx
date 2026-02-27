@@ -3,8 +3,10 @@ import {
   FilterOutlined,
   ReloadOutlined,
   ShoppingCartOutlined,
+  ShopOutlined,
 } from "@ant-design/icons";
-import { Card, Col, Row, Space, Tag, Typography, Button } from "antd";
+import { Card, Col, Row, Space, Tag, Tabs, Typography, Button } from "antd";
+import AffiliatedCustomerOrdersTable from "../components/AffiliatedCustomerOrdersTable";
 import BreadCrumb from "../../../common/BreadCrumb/BreadCrumb";
 import { SearchComponent } from "../../../common/CommonAnt/CommonSearch/CommonSearch";
 import Table from "../../../common/CommonAnt/Table";
@@ -55,7 +57,7 @@ const OrdersPage = () => {
 
   const viewPermission = GetPermission(
     dashboardData?.data?.permissions,
-    moduleNames.student,
+    moduleNames.products,
     actionNames.view
   );
 
@@ -239,30 +241,49 @@ const OrdersPage = () => {
         </Row>
       </Card>
 
-      {!viewPermission ? (
-        <Card
-          className={cardBaseClass}
-          title={
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <Typography.Text className="!font-semibold">
-                <ShoppingCartOutlined /> Orders List
-              </Typography.Text>
-              <Tag className={chipClass}>{totalOrders} Records</Tag>
-            </div>
-          }
-        >
-          <Table
-            rowKey="id"
-            loading={isLoading || isFetching}
-            refetch={refetch}
-            total={ordersData?.data?.count}
-            dataSource={orders}
-            columns={columns}
-          />
-        </Card>
-      ) : (
-        <NoPermissionData />
-      )}
+      <Card className={cardBaseClass}>
+        <Tabs
+          defaultActiveKey="admin-orders"
+          items={[
+            {
+              key: "admin-orders",
+              label: (
+                <Space>
+                  <ShoppingCartOutlined />
+                  Admin Orders
+                </Space>
+              ),
+              children: viewPermission ? (
+                <div>
+                  <div className="mb-3 flex items-center justify-between">
+                    <Tag className={chipClass}>{totalOrders} Records</Tag>
+                  </div>
+                  <Table
+                    rowKey="id"
+                    loading={isLoading || isFetching}
+                    refetch={refetch}
+                    total={ordersData?.data?.count}
+                    dataSource={orders}
+                    columns={columns}
+                  />
+                </div>
+              ) : (
+                <NoPermissionData />
+              ),
+            },
+            {
+              key: "customer-orders",
+              label: (
+                <Space>
+                  <ShopOutlined />
+                  Customer Orders (Affiliated)
+                </Space>
+              ),
+              children: <AffiliatedCustomerOrdersTable />,
+            },
+          ]}
+        />
+      </Card>
     </div>
   );
 };

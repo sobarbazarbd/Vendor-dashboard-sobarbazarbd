@@ -1,66 +1,86 @@
+// ─── B2B Supplier Orders (Admin orders from suppliers) ───────────────────────
+
+export type OrderStatus =
+  | "pending"
+  | "processing"
+  | "shipped"
+  | "delivered"
+  | "cancelled";
+
+export type PaymentStatus = "paid" | "unpaid" | "partial";
+
+export interface IOrderVariant {
+  id: number;
+  name: string;
+  sku: string;
+  price: string;
+  attributes: Record<string, string>;
+}
+
+export interface IOrderItem {
+  id: number;
+  variant: IOrderVariant | null;
+  quantity: number;
+  selling_unit_price: string;
+  total_price: string;
+}
+
 export interface IOrders {
   id: number;
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone_number: string;
-  enrollment_date: Date;
-  grade_levels: any[];
-  is_active: boolean;
-  user: IUserOrder;
+  order_number: string;
+  status: OrderStatus;
+  payment_status: PaymentStatus;
+  order_date: string;
+  total_price: string;
+  items: IOrderItem[];
+  delivery_tracking_code: string | null;
+  delivery_consignment_id: string | null;
+  delivery_status: string | null;
 }
 
 export interface ICreateOrder {
-  first_name: string;
-  last_name: string;
-  mother_name: string;
-  father_name: string;
-  mother_email: string;
-  father_email: string;
-  mother_profession: string;
-  mother_designation: string;
-  mother_education_qualification: string;
-  father_profession: string;
-  father_designation: string;
-  father_education_qualification: string;
-  mother_phone_number: string;
-  phone_number: string;
-  father_number: string;
-  date_of_birth: string; // Same as above
-  local_guardian_name: string;
-  local_guardian_email: string;
-  local_guardian_phone_number: string;
-  local_guardian_relation: string;
-  gender: "Male" | "Female" | "Other"; // You can adjust this based on your app
-  religion: string;
-  nationality: string;
-  present_address: string;
-  permanent_address: string;
-  is_active: boolean;
-  email: string;
-  image: string; // URL or base64 string for the image
+  store?: number;
+  items: Array<{
+    variant: number;
+    quantity: number;
+    selling_unit_price: number;
+  }>;
 }
 
-export interface IUserOrder {
+// ─── Customer Orders (Affiliated — visible in supplier dashboard) ─────────────
+
+export type CustomerOrderStatus =
+  | "Placed"
+  | "Paid"
+  | "Confirmed"
+  | "Processing"
+  | "Shipped"
+  | "Delivered"
+  | "Cancelled";
+
+export type DeliveryMethod = "steadfast" | "pathao" | "custom";
+
+export interface IAffiliatedOrderItem {
   id: number;
-  username: string;
-  role: IRole;
-  date_joined: Date;
-  last_login: Date;
-  is_active: boolean;
+  product_title: string;
+  sku: string | null;
+  quantity: number;
+  final_unit_price: string;
+  net_price: string;
+  product_image: string | null;
 }
 
-export interface IRole {
+export interface IAffiliatedCustomerOrder {
   id: number;
-  name: string;
-  institution: IInstitution;
-}
-
-export interface IInstitution {
-  id: number;
-  name: string;
-  code: string;
-  city: string;
-  contact_email: string;
-  is_active: boolean;
+  order_number: string;
+  status: CustomerOrderStatus;
+  order_date: string;
+  total_price: string | null;
+  customer_name: string;
+  customer_phone: string;
+  shipping_address: string | null;
+  delivery_method: DeliveryMethod | null;
+  delivery_tracking_code: string | null;
+  delivery_status: string | null;
+  items: IAffiliatedOrderItem[];
 }

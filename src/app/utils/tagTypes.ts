@@ -17,6 +17,8 @@ export const TagTypes = {
   PROFILE_SETTING: "Profile_Setting",
   STOCK_RESERVATION: "Stock_Reservation",
   STORE_SETTINGS: "Store_Settings",
+  AFFILIATED_CUSTOMER_ORDERS: "Affiliated_Customer_Orders",
+  DROPSHIPPING: "Dropshipping",
 
   // school
   INSTITUTE_PROFILE: "Institution_Profile",

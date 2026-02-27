@@ -74,6 +74,7 @@ const EditProduct = () => {
         name: product.name,
         sku: product.sku,
         is_active: product.is_active,
+        is_available_for_affiliation: product.is_available_for_affiliation !== false,
         brand_or_company: product.brand_or_company?.id,
         subcategories: product.subcategories?.map((s: any) => s.id),
         description: product.description,
@@ -279,6 +280,12 @@ const EditProduct = () => {
     formData.append("description", description);
     formData.append("sku", values.sku || "");
     formData.append("is_active", values.is_active ? "true" : "false");
+    if (isAffiliatedStore) {
+      formData.append(
+        "is_available_for_affiliation",
+        values.is_available_for_affiliation !== false ? "true" : "false"
+      );
+    }
 
     if (values.subcategories && values.subcategories.length > 0) {
       values.subcategories.forEach((id: number) => {
@@ -516,6 +523,22 @@ const EditProduct = () => {
                     />
                   </Form.Item>
                 </Col>
+
+                {isAffiliatedStore && (
+                  <Col xs={24}>
+                    <Form.Item
+                      label="Available for Customer Affiliation"
+                      name="is_available_for_affiliation"
+                      valuePropName="checked"
+                      help="When disabled, this product will not be listed in the customer shop"
+                    >
+                      <Switch
+                        checkedChildren="Listed"
+                        unCheckedChildren="Unlisted"
+                      />
+                    </Form.Item>
+                  </Col>
+                )}
               </Row>
             </Card>
           </Col>

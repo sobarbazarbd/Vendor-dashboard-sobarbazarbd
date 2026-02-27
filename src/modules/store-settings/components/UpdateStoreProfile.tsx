@@ -596,6 +596,78 @@ const UpdateStoreProfile = () => {
               </Form.Item>
             </Card>
           </Col>
+
+          {/* Delivery Integration */}
+          <Col xs={24}>
+            <Card title="Delivery Integration">
+              <Text type="secondary" className="mb-4 block text-sm">
+                Configure courier credentials for shipping affiliated customer orders. Credentials are stored securely.
+              </Text>
+
+              {/* Steadfast */}
+              <Divider orientation="left">Steadfast Courier</Divider>
+              <Row gutter={[16, 0]}>
+                <Col xs={24} md={24}>
+                  <Form.Item
+                    name="steadfast_enabled"
+                    label="Enable Steadfast"
+                    valuePropName="checked"
+                  >
+                    <Switch checkedChildren="Enabled" unCheckedChildren="Disabled" />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item name="steadfast_api_key" label="API Key">
+                    <Input.Password placeholder="Steadfast API Key" />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item name="steadfast_api_secret" label="API Secret">
+                    <Input.Password placeholder="Steadfast API Secret" />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              {/* Pathao */}
+              <Divider orientation="left">Pathao Courier</Divider>
+              <Row gutter={[16, 0]}>
+                <Col xs={24} md={24}>
+                  <Form.Item
+                    name="pathao_enabled"
+                    label="Enable Pathao"
+                    valuePropName="checked"
+                  >
+                    <Switch checkedChildren="Enabled" unCheckedChildren="Disabled" />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item name="pathao_client_id" label="Client ID">
+                    <Input placeholder="Pathao Client ID" />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item name="pathao_client_secret" label="Client Secret">
+                    <Input.Password placeholder="Pathao Client Secret" />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item name="pathao_username" label="Username (Email)">
+                    <Input type="email" placeholder="merchant@example.com" />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item name="pathao_password" label="Password">
+                    <Input.Password placeholder="Pathao account password" />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item name="pathao_store_id" label="Store ID">
+                    <Input placeholder="Pathao Store ID" />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Card>
+          </Col>
         </Row>
       </Form>
 
