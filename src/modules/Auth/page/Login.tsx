@@ -40,9 +40,13 @@ const Login: React.FC = () => {
       );
       window.location.href = from;
     } catch (error: any) {
-      const errorRes = error?.data?.message
-        ? error?.data.message
-        : "We're sorry, our system is currently unavailable.";
+      const raw = error?.data?.message ?? error?.data?.detail;
+      const errorRes =
+        typeof raw === "string"
+          ? raw
+          : typeof raw === "object" && raw !== null
+          ? JSON.stringify(raw)
+          : "We're sorry, our system is currently unavailable.";
       dispatch(setMessage(errorRes));
     }
   };

@@ -1,6 +1,14 @@
 export const GetErrorMassage = (error: any): string => {
   const details = error?.error?.data?.details;
-  const message = error?.error?.data?.message;
+  const rawMessage = error?.error?.data?.message;
+  // If backend sends {detail: "..."} at top level, use it
+  const topLevelDetail = error?.error?.data?.detail;
+  const message =
+    typeof rawMessage === "string"
+      ? rawMessage
+      : typeof topLevelDetail === "string"
+      ? topLevelDetail
+      : rawMessage;
 
   // Handle array of messages
   if (Array.isArray(message)) {

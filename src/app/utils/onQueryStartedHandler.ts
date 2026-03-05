@@ -22,10 +22,16 @@ export const handleOnQueryStarted = async <T>(
   try {
     const response = await queryFulfilled;
     dispatch(closeModal());
+    const successMsg = response.data.message;
     dispatch(
       openNotification({
         type: "success",
-        message: response.data.message,
+        message:
+          typeof successMsg === "string"
+            ? successMsg
+            : typeof (successMsg as any)?.detail === "string"
+            ? (successMsg as any).detail
+            : "Operation completed successfully.",
       })
     );
   } catch (err) {
