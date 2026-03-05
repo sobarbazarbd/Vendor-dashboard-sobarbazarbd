@@ -93,7 +93,8 @@ const UpdateStoreProfile = () => {
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
 
-  const store = data?.data;
+  const payload = data?.data;
+  const store = Array.isArray(payload?.results) ? payload?.results?.[0] : payload;
 
   /* -------------------------------- */
   /* Prefill Form */
