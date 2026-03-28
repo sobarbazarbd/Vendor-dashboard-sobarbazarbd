@@ -26,6 +26,7 @@ import { useDispatch } from "react-redux";
 import BreadCrumb from "../../../common/BreadCrumb/BreadCrumb";
 import { showModal } from "../../../app/features/modalSlice";
 import UpdateStoreProfile from "../components/UpdateStoreProfile";
+import ShowcaseImagesManager from "../components/ShowcaseImagesManager";
 import { useGetStoreSettingsQuery } from "../api/storeSettingsEndPoints";
 import { IStoreSettings } from "../types/storeSettingsType";
 
@@ -343,6 +344,8 @@ const StoreProfilePage = () => {
           </Typography.Text>
         </Card>
       )}
+
+      <ShowcaseImagesManager />
     </div>
   );
 };

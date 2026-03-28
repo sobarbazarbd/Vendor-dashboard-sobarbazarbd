@@ -60,3 +60,10 @@ export interface IStoreSettings {
   pathao_store_id?: string | null;
   pathao_enabled?: boolean;
 }
+
+export interface IShowcaseImage {
+  id: number;
+  image: string;
+  order: number;
+  created_at: string;
+}

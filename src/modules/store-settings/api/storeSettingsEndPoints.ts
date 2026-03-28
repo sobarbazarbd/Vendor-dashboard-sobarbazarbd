@@ -3,7 +3,7 @@ import { FilterTypes } from "../../../app/features/filterSlice";
 import { ApiResponse, PaginatedResponse } from "../../../app/utils/constant";
 import { handleOnQueryStarted } from "../../../app/utils/onQueryStartedHandler";
 import { TagTypes } from "../../../app/utils/tagTypes";
-import { IStoreSettings } from "../types/storeSettingsType";
+import { IStoreSettings, IShowcaseImage } from "../types/storeSettingsType";
 
 const storeSettingsEndPointsEndpoint = api.injectEndpoints({
   endpoints: (builder) => ({
@@ -42,8 +42,43 @@ const storeSettingsEndPointsEndpoint = api.injectEndpoints({
         },
       ],
     }),
+
+    // Showcase images
+    getShowcaseImages: builder.query<IShowcaseImage[], void>({
+      query: () => ({ url: "/api/v1.0/stores/showcase/" }),
+      transformResponse: (res: any) => res.results ?? res,
+      providesTags: [{ type: TagTypes.STORE_SHOWCASE, id: "LIST" }],
+    }),
+
+    uploadShowcaseImage: builder.mutation<IShowcaseImage, FormData>({
+      query: (data) => ({
+        url: "/api/v1.0/stores/showcase/",
+        method: "POST",
+        body: data,
+      }),
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        await handleOnQueryStarted(queryFulfilled, dispatch);
+      },
+      invalidatesTags: [{ type: TagTypes.STORE_SHOWCASE, id: "LIST" }],
+    }),
+
+    deleteShowcaseImage: builder.mutation<void, number>({
+      query: (id) => ({
+        url: `/api/v1.0/stores/showcase/${id}/`,
+        method: "DELETE",
+      }),
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        await handleOnQueryStarted(queryFulfilled, dispatch);
+      },
+      invalidatesTags: [{ type: TagTypes.STORE_SHOWCASE, id: "LIST" }],
+    }),
   }),
 });
 
-export const { useGetStoreSettingsQuery, useUpdateStoreSettingsMutation } =
-  storeSettingsEndPointsEndpoint;
+export const {
+  useGetStoreSettingsQuery,
+  useUpdateStoreSettingsMutation,
+  useGetShowcaseImagesQuery,
+  useUploadShowcaseImageMutation,
+  useDeleteShowcaseImageMutation,
+} = storeSettingsEndPointsEndpoint;
