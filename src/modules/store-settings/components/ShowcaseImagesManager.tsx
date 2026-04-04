@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import {
   Button,
   Card,
@@ -7,7 +7,6 @@ import {
   Space,
   Spin,
   Typography,
-  Upload,
 } from "antd";
 import {
   DeleteOutlined,
@@ -23,7 +22,8 @@ import {
 const { Text } = Typography;
 
 const ShowcaseImagesManager = () => {
-  const { data: images = [], isLoading } = useGetShowcaseImagesQuery();
+  const { data, isLoading } = useGetShowcaseImagesQuery();
+  const images = Array.isArray(data) ? data : [];
   const [uploadShowcase, { isLoading: isUploading }] =
     useUploadShowcaseImageMutation();
   const [deleteShowcase] = useDeleteShowcaseImageMutation();

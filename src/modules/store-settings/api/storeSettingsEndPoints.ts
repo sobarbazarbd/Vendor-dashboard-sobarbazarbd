@@ -46,7 +46,13 @@ const storeSettingsEndPointsEndpoint = api.injectEndpoints({
     // Showcase images
     getShowcaseImages: builder.query<IShowcaseImage[], void>({
       query: () => ({ url: "/api/v1.0/stores/showcase/" }),
-      transformResponse: (res: any) => res.results ?? res,
+      transformResponse: (res: any): IShowcaseImage[] => {
+        if (Array.isArray(res)) return res;
+        if (Array.isArray(res?.results)) return res.results;
+        if (Array.isArray(res?.data?.results)) return res.data.results;
+        if (Array.isArray(res?.data)) return res.data;
+        return [];
+      },
       providesTags: [{ type: TagTypes.STORE_SHOWCASE, id: "LIST" }],
     }),
 
@@ -57,7 +63,7 @@ const storeSettingsEndPointsEndpoint = api.injectEndpoints({
         body: data,
       }),
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
-        await handleOnQueryStarted(queryFulfilled, dispatch);
+        await handleOnQueryStarted(queryFulfilled as any, dispatch);
       },
       invalidatesTags: [{ type: TagTypes.STORE_SHOWCASE, id: "LIST" }],
     }),
@@ -68,7 +74,7 @@ const storeSettingsEndPointsEndpoint = api.injectEndpoints({
         method: "DELETE",
       }),
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
-        await handleOnQueryStarted(queryFulfilled, dispatch);
+        await handleOnQueryStarted(queryFulfilled as any, dispatch);
       },
       invalidatesTags: [{ type: TagTypes.STORE_SHOWCASE, id: "LIST" }],
     }),
