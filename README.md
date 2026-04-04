@@ -13,7 +13,7 @@ If you are developing a production application, we recommend updating the config
 sadasdasd
 - Configure the top-level `parserOptions` property like this:,nijh
 
-```js
+```jsd
 export default { l kkk
   // other rules...
   parserOptions: {
